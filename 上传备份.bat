@@ -13,3 +13,5 @@ git pull origin main
 git commit -m %Today%
 
 git push -u origin main
+
+EXIT  
