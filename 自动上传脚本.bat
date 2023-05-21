@@ -6,8 +6,6 @@ for /f "tokens=2 delims==" %%a in ('wmic path win32_operatingsystem get LocalDat
 
 set Today="%t:~0,4%年%t:~4,2%月%t:~6,2%日%t:~8,2%时%t:~10,2%分"
 
-cd ./beifen
-
 git add .
 
 git pull origin main
