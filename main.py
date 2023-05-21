@@ -119,7 +119,7 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, c=0, cs=30):
         time.sleep(30)
 
 
-if __name__ == "__main__":
+def main_run():
     # 加载 .env 文件中的环境变量
     load_dotenv()
 
@@ -137,10 +137,20 @@ if __name__ == "__main__":
     # 从 .env 文件中获取 SQLiteDB 配置
     sqlite_db_file = os.getenv('db_file')
 
-    while True:
+    try:
 
-        re_h = re.compile(r'(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*')
+        while True:
+            re_h = re.compile(r'(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*')
+            db = SQLiteDB(db_file=sqlite_db_file)
+            sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
+
+            main(files_video, video_url, gua_gen, db, sql, re_h)
+    finally:
+
         db = SQLiteDB(db_file=sqlite_db_file)
-        sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
 
-        main(files_video, video_url, gua_gen, db, sql, re_h)
+        db.drop_table('relay_table')
+
+
+if __name__ == "__main__":
+    main_run()
