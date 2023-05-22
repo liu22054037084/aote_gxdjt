@@ -24,7 +24,6 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, c=0, cs=30):
         DB.create_table('relay_table', 'key TEXT PRIMARY KEY ASC ON CONFLICT REPLACE, files TEXT')
 
         logger.info('处理开始执行了！')
-        print('处理开始执行了！')
 
         files, files_key = mp4_files(path=FilesVideo)
 
@@ -82,9 +81,9 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, c=0, cs=30):
                     if cp not in ys:
                         shutil.copy2(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/')
                         logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {GuaGen}/{list_b[0][2]}/{list_b[0][3]}/ 》》的视频转移！')
-                        print(f"正在执行》》 {list_c[i][1]} 到 {GuaGen}/{list_b[0][2]}/{list_b[0][3]}/ 》》的视频转移！")
+
                         logger.info(f'执行把组装链接写入数据库')
-                        print(f"执行把组装链接写入数据库")
+
                         DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
 
                 qtb = SQL.select_rows(table_name='mac_vod', condition=f"vod_name='{list_b[0][0]}'")
@@ -124,23 +123,22 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, c=0, cs=30):
                     random_day = random.randint(1, 28)  # 假设每个月都是28天
                     tm = f"'{l_b[0][2]}-{randomq:02d}-{random_day:02d}'"
                     logger.info(f"笑死了开始第一次添加《{list_b[0][0]}》的视频数据！")
-                    print(f"笑死了开始第一次添加《{list_b[0][0]}》的视频数据！")
+
                     SQL.insert_row(table_name='mac_vod', headers=["type_id", "vod_name", "vod_sub", "vod_en", "vod_pic", "vod_pic_thumb", "vod_pic_slide", "vod_pic_screenshot", "vod_letter", "vod_class", "vod_content", "vod_pubdate", "vod_area", "vod_lang", "vod_year", "vod_state", "vod_time", "vod_time_add", "vod_time_hits", "vod_play_url", "vod_trysee", "vod_play_from", "vod_play_server", "vod_status"],
                                    values=[q, f"'{l_b[0][0]}'", f"'{l_b[0][7]}'", f"'{l_b[0][8]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][9]}'", f"'{l_b[0][3]}月'", f"'{l_b[0][11]}'", tm, type_id, type_id, l_b[0][2], f"'{l_b[0][4]}'", l_b[0][12], l_b[0][12], l_b[0][12], f"'{cp1}'", 1, "'dplayer'", "'no'", 1])
                 elif qtb[0][4] == list_b[0][0]:
                     logger.info(f"笑死了这次只更新了一下《{list_b[0][0]}》的视频链接！")
-                    print(f"笑死了这次只更新了一下《{list_b[0][0]}》的视频链接！")
+
                     SQL.update_field(table_name='mac_vod', field_name="vod_play_url", new_value=f"'{cp1}'", conditions=[f"vod_name = '{list_b[0][0]}'"])
         DB.drop_table('relay_table')
         logger.info(f'完成新处理第{c}数据relay_table表删除！')
         logger.info(f'新处理的一次操作完成！')
         logger.info('进入三十秒沉默！')
-        print("进入三十秒沉默！")
+
         time.sleep(30)
 
 
 def main_run():
-
     # 检测是否存在 .env 文件
     if not os.path.exists('.env'):
         # 创建 .env 文件
@@ -231,7 +229,7 @@ def main_run():
             sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
             logger.info('数据库全部连接成功')
             logger.info(f'第{cs_z}数据库更新')
-            print(f'数据库全部连接成功\n第{cs_z}数据库更新')
+
             cs_z += 1
             main(files_video, video_url, gua_gen, db, sql, re_h, logger)
             logger.info(f'完成{cs_z}次完循环处理！')
@@ -261,7 +259,6 @@ def main_run():
         db = SQLiteDB(db_file=sqlite_db_file)
         db.drop_table('relay_table')
         logger.info(f'错误或者强制退出')
-        print(f'错误或者强制退出\n已经对对数据库进行处理')
 
 
 if __name__ == "__main__":
