@@ -76,7 +76,7 @@ class SQLiteDB:
                 tiao_jianl = f"('{tiao_jianl[0]}')"
             query = f"SELECT * FROM {from_table} WHERE {zd_table} IN {tiao_jianl}"
         else:
-            condition = " OR ".join([f"{zd_table} LIKE '%{i.replace(r' ', '%').replace(r'_', '%')}%'" for i in tiao_jianl])
+            condition = " OR ".join([f"{zd_table} LIKE '%{i.replace(r' ', '%').replace(r'_', '%').replace(r'[', '%').replace(r']', '%')}%'" for i in tiao_jianl])
             query = f"SELECT * FROM {from_table} WHERE {condition}"
 
         result = self.fetch(query)
@@ -93,7 +93,9 @@ class SQLiteDB:
             for row in result:
                 result_list.append(list(row))
 
-            return result_list
+            sorted_result = sorted(result_list, key=lambda x: x[0])
+
+            return sorted_result
 
     def update_rows(self, table_name, values, condition=None):
         # 更新指定表中的行，可以指定一个条件过滤要更新的行

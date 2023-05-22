@@ -30,92 +30,98 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, c=0, cs=30):
 
         key_like = list(set(files_key))
 
-        list_b = DB.query_target_table(tiao_jian=key_like, from_table="reserve_table", zd_table="like_l")
+        for key in key_like:
 
-        if list_b is not None:
+            list_b = DB.query_target_table(tiao_jian=key, from_table="reserve_table", zd_table="like_l")
 
-            list_c = DB.query_target_table(tiao_jian=key_like, from_table="relay_table", zd_table="key", like_l=True)
+            if list_b is not None:
 
-            q = 0
+                list_c = DB.query_target_table(tiao_jian=key_like, from_table="relay_table", zd_table="key", like_l=True)
 
-            if list_b[0][8] is None:
-                vod_en = ''.join(lazy_pinyin(list_b[0][0]))
-                vod_letter = vod_en[0].upper()
-                q = q + 1
+                q = 0
 
-            if list_b[0][-2] is None:
-                continue
-            else:
-                if not ("<p>" in list_b[0][-2] or "</p>" in list_b[0][-2]):
-                    vod_blurb = '<p>' + list_b[0][-2].replace(' ', '').replace('。', '。</p><p>').replace('！', '！</p><p>').replace('？', '？</p><p>').replace('<p></p>', '</p>') + '</p>'
+                if list_b[0][8] is None:
+                    vod_en = ''.join(lazy_pinyin(list_b[0][0]))
+                    vod_letter = vod_en[0].upper()
                     q = q + 1
 
-            if q == 1:
-                DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")
-            elif q == 2:
-                DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}', vod_blurb = '{vod_blurb}' ", f"name = '{list_b[0][0]}'")
-
-            cp1 = ''
-
-            for i in range(len(list_c)):
-
-                cp = f"{list_b[0][2]}/{list_b[0][3]}/{list_c[i][0]}"
-
-                if list_b[0][4] is None:
-                    ys = '#'
+                if list_b[0][-2] is None:
+                    continue
                 else:
-                    ys = list_b[0][4]
+                    if not ("<p>" in list_b[0][-2] or "</p>" in list_b[0][-2]):
+                        vod_blurb = '<p>' + list_b[0][-2].replace('\t', '').replace('\n', '').replace(' ', '').replace('。', '。</p><p>').replace('！', '！</p><p>').replace('？', '？</p><p>').replace('<p></p>', '</p>') + '</p>'
+                        q = q + 1
 
-                if cp1 == '':
-                    cp1 = VideoUrl + cp
-                else:
-                    cp1 = cp1 + '#' + VideoUrl + cp
+                if q == 1:
+                    DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")
+                elif q == 2:
+                    DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}', vod_blurb = '{vod_blurb}' ", f"name = '{list_b[0][0]}'")
 
-                if cp not in ys:
-                    shutil.copy(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/')
-                    DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
+                cp1 = ''
 
-            qtb = SQL.select_rows(table_name='mac_vod', condition=f"vod_name='{list_b[0][0]}'")
-            if not qtb:
-                l_b = DB.query_target_table(tiao_jian=key_like, from_table="reserve_table", zd_table="like_l")
-                if l_b[0][3] == 1:
-                    startq = 1
-                    endq = 4
-                elif l_b[0][3] == 4:
-                    startq = 4
-                    endq = 7
-                elif l_b[0][3] == 7:
-                    startq = 7
-                    endq = 10
-                elif l_b[0][3] == 10:
-                    startq = 10
-                    endq = 12
-                if l_b[0][6] == 1:
-                    type_id = "'大陆'"
-                    q = 2
-                elif l_b[0][6] == 2:
-                    type_id = "'日韩'"
-                    q = 3
-                elif l_b[0][6] == 3:
-                    type_id = "'欧美'"
-                    q = 4
-                elif l_b[0][6] == 4:
-                    type_id = "'大陆'"
-                    q = 1
-                elif l_b[0][6] == 5:
-                    type_id = "'日韩'"
-                    q = 1
-                elif l_b[0][6] == 6:
-                    type_id = "'欧美'"
-                    q = 1
-                randomq = random.randint(startq, endq)
-                random_day = random.randint(1, 28)  # 假设每个月都是28天
-                tm = f"'{l_b[0][2]}-{randomq:02d}-{random_day:02d}'"
-                SQL.insert_row(table_name='mac_vod', headers=["type_id", "vod_name", "vod_sub", "vod_en", "vod_pic", "vod_pic_thumb", "vod_pic_slide", "vod_pic_screenshot", "vod_letter", "vod_class", "vod_content", "vod_pubdate", "vod_area", "vod_lang", "vod_year", "vod_state", "vod_time", "vod_time_add", "vod_time_hits", "vod_play_url", "vod_trysee", "vod_play_from", "vod_play_server", "vod_status"],
-                               values=[q, f"'{l_b[0][0]}'", f"'{l_b[0][7]}'", f"'{l_b[0][8]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][9]}'", f"'{l_b[0][3]}月'", f"'{l_b[0][11]}'", tm, type_id, type_id, l_b[0][2], f"'{l_b[0][4]}'", l_b[0][12], l_b[0][12], l_b[0][12], f"'{cp1}'", 1, "'dplayer'", "'no'", 1])
-            elif qtb[0][4] == list_b[0][0]:
-                SQL.update_field(table_name='mac_vod', field_name="vod_play_url", new_value=f"'{cp1}'", conditions=[f"vod_name = '{list_b[0][0]}'"])
-            DB.drop_table('relay_table')
+                for i in range(len(list_c)):
+
+                    cp = f"{list_b[0][2]}/{list_b[0][3]}/{list_c[i][0]}"
+
+                    if list_b[0][4] is None:
+                        ys = '#'
+                    else:
+                        ys = list_b[0][4]
+
+                    if cp1 == '':
+                        cp1 = VideoUrl + cp
+                    else:
+                        cp1 = cp1 + '#' + VideoUrl + cp
+
+                    if cp not in ys:
+                        shutil.copy(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/')
+                        print(f"正在执行》》 {list_c[i][1]} 到 {GuaGen}/{list_b[0][2]}/{list_b[0][3]}/ 》》的视频转移！")
+                print("执行把组装链接写入数据库")
+                DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
+
+                qtb = SQL.select_rows(table_name='mac_vod', condition=f"vod_name='{list_b[0][0]}'")
+                if not qtb:
+                    l_b = DB.query_target_table(tiao_jian=key_like, from_table="reserve_table", zd_table="like_l")
+                    if l_b[0][3] == 1:
+                        startq = 1
+                        endq = 4
+                    elif l_b[0][3] == 4:
+                        startq = 4
+                        endq = 7
+                    elif l_b[0][3] == 7:
+                        startq = 7
+                        endq = 10
+                    elif l_b[0][3] == 10:
+                        startq = 10
+                        endq = 12
+                    if l_b[0][6] == 1:
+                        type_id = "'大陆'"
+                        q = 2
+                    elif l_b[0][6] == 2:
+                        type_id = "'日韩'"
+                        q = 3
+                    elif l_b[0][6] == 3:
+                        type_id = "'欧美'"
+                        q = 4
+                    elif l_b[0][6] == 4:
+                        type_id = "'大陆'"
+                        q = 1
+                    elif l_b[0][6] == 5:
+                        type_id = "'日韩'"
+                        q = 1
+                    elif l_b[0][6] == 6:
+                        type_id = "'欧美'"
+                        q = 1
+                    randomq = random.randint(startq, endq)
+                    random_day = random.randint(1, 28)  # 假设每个月都是28天
+                    tm = f"'{l_b[0][2]}-{randomq:02d}-{random_day:02d}'"
+                    print(f"笑死了开始添加《{list_b[0][0]}》的视频数据！")
+                    SQL.insert_row(table_name='mac_vod', headers=["type_id", "vod_name", "vod_sub", "vod_en", "vod_pic", "vod_pic_thumb", "vod_pic_slide", "vod_pic_screenshot", "vod_letter", "vod_class", "vod_content", "vod_pubdate", "vod_area", "vod_lang", "vod_year", "vod_state", "vod_time", "vod_time_add", "vod_time_hits", "vod_play_url", "vod_trysee", "vod_play_from", "vod_play_server", "vod_status"],
+                                   values=[q, f"'{l_b[0][0]}'", f"'{l_b[0][7]}'", f"'{l_b[0][8]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][9]}'", f"'{l_b[0][3]}月'", f"'{l_b[0][11]}'", tm, type_id, type_id, l_b[0][2], f"'{l_b[0][4]}'", l_b[0][12], l_b[0][12], l_b[0][12], f"'{cp1}'", 1, "'dplayer'", "'no'", 1])
+                elif qtb[0][4] == list_b[0][0]:
+                    print(f"笑死了这次只更新了一下《{list_b[0][0]}》的视频链接！")
+                    SQL.update_field(table_name='mac_vod', field_name="vod_play_url", new_value=f"'{cp1}'", conditions=[f"vod_name = '{list_b[0][0]}'"])
+        DB.drop_table('relay_table')
         time.sleep(30)
 
 
