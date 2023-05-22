@@ -3,6 +3,8 @@ import os
 import time
 import shutil
 import random
+import logging
+import logging.handlers
 from pypinyin import lazy_pinyin
 from dotenv import load_dotenv
 from get_files.mp4_files import mp4_files
@@ -10,15 +12,19 @@ from sql_class.sql_ite import SQLiteDB
 from sql_class.my_sql import MySQLDB
 
 
-def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, c=0, cs=30):
+def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, c=0, cs=30):
     while True:
 
         c = c + 1
 
         if c == cs:
             break
+        logger.info(f'新处理第{c}数据relay_table表创建！')
 
         DB.create_table('relay_table', 'key TEXT PRIMARY KEY ASC ON CONFLICT REPLACE, files TEXT')
+
+        logger.info('处理开始执行了！')
+        print('处理开始执行了！')
 
         files, files_key = mp4_files(path=FilesVideo)
 
@@ -28,15 +34,15 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, c=0, cs=30):
 
         files_key = [ReH.sub('', item) for item in files_key]
 
-        key_like = list(set(files_key))
+        my_list = [key for key in list(set(files_key)) if key is not None and key.strip() != '']
 
-        for key in key_like:
+        for key in my_list:
 
             list_b = DB.query_target_table(tiao_jian=key, from_table="reserve_table", zd_table="like_l")
 
             if list_b is not None:
 
-                list_c = DB.query_target_table(tiao_jian=key_like, from_table="relay_table", zd_table="key", like_l=True)
+                list_c = DB.query_target_table(tiao_jian=key, from_table="relay_table", zd_table="key", like_l=True)
 
                 q = 0
 
@@ -74,14 +80,16 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, c=0, cs=30):
                         cp1 = cp1 + '#' + VideoUrl + cp
 
                     if cp not in ys:
-                        shutil.copy(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/')
+                        shutil.copy2(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/')
+                        logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {GuaGen}/{list_b[0][2]}/{list_b[0][3]}/ 》》的视频转移！')
                         print(f"正在执行》》 {list_c[i][1]} 到 {GuaGen}/{list_b[0][2]}/{list_b[0][3]}/ 》》的视频转移！")
-                print("执行把组装链接写入数据库")
-                DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
+                        logger.info(f'执行把组装链接写入数据库')
+                        print(f"执行把组装链接写入数据库")
+                        DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
 
                 qtb = SQL.select_rows(table_name='mac_vod', condition=f"vod_name='{list_b[0][0]}'")
                 if not qtb:
-                    l_b = DB.query_target_table(tiao_jian=key_like, from_table="reserve_table", zd_table="like_l")
+                    l_b = DB.query_target_table(tiao_jian=key, from_table="reserve_table", zd_table="like_l")
                     if l_b[0][3] == 1:
                         startq = 1
                         endq = 4
@@ -115,13 +123,19 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, c=0, cs=30):
                     randomq = random.randint(startq, endq)
                     random_day = random.randint(1, 28)  # 假设每个月都是28天
                     tm = f"'{l_b[0][2]}-{randomq:02d}-{random_day:02d}'"
-                    print(f"笑死了开始添加《{list_b[0][0]}》的视频数据！")
+                    logger.info(f"笑死了开始第一次添加《{list_b[0][0]}》的视频数据！")
+                    print(f"笑死了开始第一次添加《{list_b[0][0]}》的视频数据！")
                     SQL.insert_row(table_name='mac_vod', headers=["type_id", "vod_name", "vod_sub", "vod_en", "vod_pic", "vod_pic_thumb", "vod_pic_slide", "vod_pic_screenshot", "vod_letter", "vod_class", "vod_content", "vod_pubdate", "vod_area", "vod_lang", "vod_year", "vod_state", "vod_time", "vod_time_add", "vod_time_hits", "vod_play_url", "vod_trysee", "vod_play_from", "vod_play_server", "vod_status"],
                                    values=[q, f"'{l_b[0][0]}'", f"'{l_b[0][7]}'", f"'{l_b[0][8]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][9]}'", f"'{l_b[0][3]}月'", f"'{l_b[0][11]}'", tm, type_id, type_id, l_b[0][2], f"'{l_b[0][4]}'", l_b[0][12], l_b[0][12], l_b[0][12], f"'{cp1}'", 1, "'dplayer'", "'no'", 1])
                 elif qtb[0][4] == list_b[0][0]:
+                    logger.info(f"笑死了这次只更新了一下《{list_b[0][0]}》的视频链接！")
                     print(f"笑死了这次只更新了一下《{list_b[0][0]}》的视频链接！")
                     SQL.update_field(table_name='mac_vod', field_name="vod_play_url", new_value=f"'{cp1}'", conditions=[f"vod_name = '{list_b[0][0]}'"])
         DB.drop_table('relay_table')
+        logger.info(f'完成新处理第{c}数据relay_table表删除！')
+        logger.info(f'新处理的一次操作完成！')
+        logger.info('进入三十秒沉默！')
+        print("进入三十秒沉默！")
         time.sleep(30)
 
 
@@ -142,6 +156,9 @@ def main_run():
             
             # 根目录到达要转移的地址或者是相对地址(最后不要有/)
             gua_gen=
+            
+            # log保留天数默认为七天
+            LOG_RETENTION_DAYS=
             
             [MySQLDB]
             # mysql数据库地址
@@ -167,6 +184,27 @@ def main_run():
     # 加载 .env 文件中的环境变量
     load_dotenv()
 
+    # 添加日志配置
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    logger = logging.getLogger('main_run')
+    logger.setLevel(logging.DEBUG)
+
+    # 从环境变量获取保留日期，如果未定义，则默认为七天
+    log_retention_days = int(os.getenv('LOG_RETENTION_DAYS', 7))
+
+    # 创建FileHandler，并设置日志文件名和保留时间
+    log_file = 'auto_delete_log_date.log'
+    file_handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', backupCount=log_retention_days)
+    file_handler.setLevel(logging.DEBUG)
+
+    # 设置日志格式
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+
+    # 将FileHandler添加到Logger中
+    logger.addHandler(file_handler)
+
     # 从 .env 文件中获取 BD 配置
     files_video = os.getenv('files_video')
     video_url = os.getenv('video_url')
@@ -183,17 +221,47 @@ def main_run():
 
     try:
 
+        logger.info('程序开始运行')
+
+        cs_z = 0
+
         while True:
             re_h = re.compile(r'(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*')
             db = SQLiteDB(db_file=sqlite_db_file)
             sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
-
-            main(files_video, video_url, gua_gen, db, sql, re_h)
+            logger.info('数据库全部连接成功')
+            logger.info(f'第{cs_z}数据库更新')
+            print(f'数据库全部连接成功\n第{cs_z}数据库更新')
+            cs_z += 1
+            main(files_video, video_url, gua_gen, db, sql, re_h, logger)
+            logger.info(f'完成{cs_z}次完循环处理！')
     finally:
 
-        db = SQLiteDB(db_file=sqlite_db_file)
+        # 添加日志配置
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+        logger = logging.getLogger('main_run')
+        logger.setLevel(logging.DEBUG)
+
+        # 从环境变量获取保留日期，如果未定义，则默认为七天
+        log_retention_days = int(os.getenv('LOG_RETENTION_DAYS', 7))
+
+        # 创建FileHandler，并设置日志文件名和保留时间
+        log_file = 'auto_delete_log_date.log'
+        file_handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', backupCount=log_retention_days)
+        file_handler.setLevel(logging.DEBUG)
+
+        # 设置日志格式
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+
+        # 将FileHandler添加到Logger中
+        logger.addHandler(file_handler)
+
+        db = SQLiteDB(db_file=sqlite_db_file)
         db.drop_table('relay_table')
+        logger.info(f'错误或者强制退出')
+        print(f'错误或者强制退出\n已经对对数据库进行处理')
 
 
 if __name__ == "__main__":
