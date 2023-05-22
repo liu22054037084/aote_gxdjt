@@ -8,6 +8,7 @@ def v3_post(cookies, hash_id, url):
     :param cookies: 登录信息
     :param hash_id:  hashid数组对
     :return: 返回josn分拣后的值形成字典对以名字为key
+    不安全太慢，一样的缺点
     """
 
     payload = {"items": hash_id}

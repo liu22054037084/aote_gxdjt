@@ -14,7 +14,7 @@ def hashid(file_id):
     hashids_object = hashids.Hashids(salt=hashids_salt)
     # 生成Hash ID
 
-    number = 2
+    number = 2 # 可以指定，这个看自己的需求
 
     hash_id = hashids_object.encode(file_id, number)
 
