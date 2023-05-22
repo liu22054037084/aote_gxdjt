@@ -120,6 +120,44 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, c=0, cs=30):
 
 
 def main_run():
+
+    # 检测是否存在 .env 文件
+    if not os.path.exists('.env'):
+        # 创建 .env 文件
+        with open('.env', 'w') as file:
+            # 写入内容到 .env 文件
+            file.write("""
+            [BD]
+            # 用来添加获取视频的地址(最后要有/)
+            files_video=
+            
+            # 这是直连的前分享地址(最后要有/)
+            video_url=
+            
+            # 根目录到达要转移的地址或者是相对地址(最后不要有/)
+            gua_gen=
+            
+            [MySQLDB]
+            # mysql数据库地址
+            host=
+            
+            # mysql数据库账户
+            user=
+            
+            # mysql数据库密码
+            password=
+            
+            # mysql数据库名
+            database=
+            
+            [SQLiteDB]
+            # 本地数据库地址
+            db_file=
+            """)
+
+        # 停止运行
+        raise SystemExit('已创建 .env 文件')
+
     # 加载 .env 文件中的环境变量
     load_dotenv()
 
