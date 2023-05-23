@@ -4,6 +4,7 @@ import time
 import shutil
 import random
 import logging
+import filecmp
 import logging.handlers
 from pypinyin import lazy_pinyin
 from dotenv import load_dotenv
@@ -13,7 +14,6 @@ from sql_class.my_sql import MySQLDB
 
 
 def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, c=0, cs=30):
-    
     while True:
 
         c = c + 1
@@ -67,28 +67,41 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, c=0, cs=30):
 
                 for i in range(len(list_c)):
 
-                    cp = f"{list_b[0][2]}/{list_b[0][3]}/{list_c[i][0]}"  # 链接的对于挂在网盘目录为根目录的地址组装
+                    cp = f"{list_b[0][2]}/{list_b[0][3]}/{list_c[i][0]}"
 
-                    if list_b[0][5] is None:  # list_b[0][5]是链接存储地址，但是进行查看字符是否包含的时候，他不能为空，所有先进行判断进行赋值
+                    if list_b[0][5] is None:
                         ys = '#'
                     else:
                         ys = list_b[0][5]
 
-                    if cp1 == '':  # 初次链接写入前面不能加#不如影视服务器那边会无法识别或者多识别，所以在这里进行一个判断，第一次先组装链接，VideoUrl是我们给的那个视频直链的前半段固定内容
+                    if cp1 == '':
                         cp1 = VideoUrl + cp
                     else:
                         cp1 = cp1 + '#' + VideoUrl + cp  # 保证两个视频链接直接存在一个#用于区分视频每个链接的独立性
-                    # 需要加工的内容
-                    if cp not in ys:  # 这里验证存在问题，原本这里是用来确认链接是否存在与数据库中，如果不存在则执行下面操作，但是现在字符无法确认是否存在导致重复执行下面操作（好像已经修复了，在写注释的时候，我看好像是ys的赋值有点问题已经改过来了，你再看一下）
 
-                        shutil.copy2(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/')  # ps现在无法校验文件是否存在，导致循环的过程当作重复上传（上面的验证疑似修复，就不对让他他进行重复上传，但是我还是建议加个验证过程，比如先确认文件位置处文件是否存在，要是存在在获取他的信息与要进行转移拷贝的文件进行比对，要是一样就跳过反之覆盖，shutil.copy2就是要是存在则覆盖）
-                    # TODO
+                    if cp not in ys:
+                        if not os.path.exists(f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/'):  # 检查源文件是否存在
+                            logger.info(f'路径不存在创建属于《{list_b[0][0]}》路径')
+                            os.makedirs(f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/')
 
-                        logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {GuaGen}/{list_b[0][2]}/{list_b[0][3]}/ 》》的视频转移！')
-
-                        logger.info(f'执行把组装链接写入数据库')
-
-                        DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
+                        destination_file = os.path.join(f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/{list_c[i][0]}', f"{list_c[i][0]}")
+                        if os.path.exists(destination_file):
+                            # 比较源文件和目标文件是否相同
+                            if filecmp.cmp(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/{list_c[i][0]}'):
+                                logger.info(f'文件已存在且相同,跳过')
+                            else:
+                                logger.info(f'文件已存在且且不同进行覆盖！')
+                                logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/ 》》的视频转移！')
+                                shutil.copy2(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/')
+                                logger.info(f'执行把组装链接写入数据库')
+                                DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
+                                logger.info(f'组装链接写入完成')
+                        else:
+                            logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/ 》》的视频转移！')
+                            shutil.copy2(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/')
+                            logger.info(f'执行把组装链接写入数据库')
+                            DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
+                            logger.info(f'组装链接写入完成')
 
                 qtb = SQL.select_rows(table_name='mac_vod', condition=f"vod_name='{list_b[0][0]}'")
                 if not qtb:
@@ -130,6 +143,7 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, c=0, cs=30):
                     SQL.insert_row(table_name='mac_vod', headers=["type_id", "vod_name", "vod_sub", "vod_en", "vod_pic", "vod_pic_thumb", "vod_pic_slide", "vod_pic_screenshot", "vod_letter", "vod_class", "vod_content", "vod_pubdate", "vod_area", "vod_lang", "vod_year", "vod_state", "vod_time", "vod_time_add", "vod_time_hits", "vod_play_url", "vod_trysee", "vod_play_from", "vod_play_server", "vod_status"],
                                    values=[q, f"'{l_b[0][0]}'", f"'{l_b[0][7]}'", f"'{l_b[0][8]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][9]}'", f"'{l_b[0][3]}月'", f"'{l_b[0][11]}'", tm, type_id, type_id, l_b[0][2], f"'{l_b[0][4]}'", l_b[0][12], l_b[0][12], l_b[0][12], f"'{cp1}'", 1, "'dplayer'", "'no'", 1])
                 elif qtb[0][4] == list_b[0][0]:
+
                     logger.info(f"笑死了这次只更新了一下《{list_b[0][0]}》的视频链接！")
 
                     SQL.update_field(table_name='mac_vod', field_name="vod_play_url", new_value=f"'{cp1}'", conditions=[f"vod_name = '{list_b[0][0]}'"])
