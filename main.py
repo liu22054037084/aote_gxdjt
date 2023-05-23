@@ -13,7 +13,7 @@ from sql_class.sql_ite import SQLiteDB
 from sql_class.my_sql import MySQLDB
 
 
-def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, c=0, cs=30):
+def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, cs=30):
     while True:
 
         c = c + 1
@@ -141,7 +141,7 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, c=0, cs=30):
                     tm = f"'{l_b[0][2]}-{randomq:02d}-{random_day:02d}'"
                     logger.info(f"笑死了开始第一次添加《{list_b[0][0]}》的视频数据！")
                     SQL.insert_row(table_name='mac_vod', headers=["type_id", "vod_name", "vod_sub", "vod_en", "vod_pic", "vod_pic_thumb", "vod_pic_slide", "vod_pic_screenshot", "vod_letter", "vod_class", "vod_content", "vod_pubdate", "vod_area", "vod_lang", "vod_year", "vod_state", "vod_time", "vod_time_add", "vod_time_hits", "vod_play_url", "vod_trysee", "vod_play_from", "vod_play_server", "vod_status"],
-                                   values=[q, f"'{l_b[0][0]}'", f"'{l_b[0][7]}'", f"'{l_b[0][8]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][9]}'", f"'{l_b[0][3]}月'", f"'{l_b[0][11]}'", tm, type_id, type_id, l_b[0][2], f"'{l_b[0][4]}'", l_b[0][12], l_b[0][12], l_b[0][12], f"'{cp1}'", 1, "'dplayer'", "'no'", 1])
+                                   values=[q, f"'{l_b[0][0]}'", f"'{l_b[0][7]}'", f"'{l_b[0][8]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][9]}'", f"'{l_b[0][3]}月'", f"'{l_b[0][11]}'", tm, type_id, type_id, l_b[0][2], f"'{l_b[0][4]}'", l_b[0][12], l_b[0][12], l_b[0][12], f"'{cp1}'", 1, f"'{vod_dplayer}'", "'no'", 1])
                 elif qtb[0][4] == list_b[0][0]:
 
                     logger.info(f"笑死了这次只更新了一下《{list_b[0][0]}》的视频链接！")
@@ -171,6 +171,9 @@ def main_run():
             
             # 根目录到达要转移的地址或者是相对地址(最后不要有/)
             gua_gen=
+            
+            # 选择使用的播放器默认dplayer
+            vod_dplayer=dplayer
             
             # log保留天数默认为七天
             LOG_RETENTION_DAYS=
@@ -224,6 +227,7 @@ def main_run():
     files_video = os.getenv('files_video')
     video_url = os.getenv('video_url')
     gua_gen = os.getenv('gua_gen')
+    vod_dplayer = os.getenv('vod_dplayer')
 
     # 从 .env 文件中获取 MySQLDB 配置
     mysql_host = os.getenv('host')
@@ -248,7 +252,7 @@ def main_run():
             logger.info(f'第{cs_z}数据库更新')
 
             cs_z += 1
-            main(files_video, video_url, gua_gen, db, sql, re_h, logger)
+            main(files_video, video_url, gua_gen, db, sql, re_h, logger, vod_dplayer)
             logger.info(f'完成{cs_z}次完循环处理！')
     finally:
 
