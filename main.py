@@ -68,11 +68,8 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                 for i in range(len(list_c)):
 
                     cp = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/{list_c[i][0]}"
-<<<<<<< HEAD
                     gen_cp = f"{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/"
                     gen_fil = f'{gen_cp}{list_c[i][0]}'
-=======
->>>>>>> ed1fa42da40aaa3329181d3b0c1a71a4408ec5fc
 
                     if list_b[0][5] is None:
                         ys = '#'
