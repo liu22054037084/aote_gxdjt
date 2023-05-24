@@ -70,11 +70,12 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                     vod_letter = vod_en[0].upper()
                     DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")
 
-                if 'gxdjt.cf' not in list_b[0][10]:
-                    cg = download_image(list_b[0][10], 'img.jpg', gen_cp)
-                    if cg == '成功':
-                        DB.update_rows('reserve_table', f"vod_pic = '{VideoUrl}{cp_up}img.jpg'", f"name = '{list_b[0][0]}'")
-                        logger.info(f'图片下载转换成功img.jpg并储存在OneDrive上，然后保存现在的链接，方便后面调用！')
+                if list_b[0][10] is not None:
+                    if 'gxdjt.cf' not in list_b[0][10]:
+                        cg = download_image(list_b[0][10], 'img.jpg', gen_cp)
+                        if cg == '成功':
+                            DB.update_rows('reserve_table', f"vod_pic = '{VideoUrl}{cp_up}img.jpg'", f"name = '{list_b[0][0]}'")
+                            logger.info(f'图片下载转换成功img.jpg并储存在OneDrive上，然后保存现在的链接，方便后面调用！')
 
                 if list_b[0][-2] is None:
                     continue
@@ -109,13 +110,13 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                                 logger.info(f'{list_c[i][0]}的文件已存在且相同,跳过')
                             else:
                                 logger.info(f'{list_c[i][0]}的文件已存在且且不同进行覆盖！')
-                                logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
+                                logger.info(f'f"正在执行》》 {gen_cp} 到 {list_c[i][1]} 》》的视频转移！')
                                 shutil.copy2(f'{list_c[i][1]}', gen_cp)
                                 logger.info(f'执行把组装链接写入数据库')
                                 DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
                                 logger.info(f'组装链接写入完成')
                         else:
-                            logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
+                            logger.info(f'f"正在执行》》 {gen_cp} 到 {list_c[i][1]} 》》的视频转移！')
                             shutil.copy2(f'{list_c[i][1]}', gen_cp)
                             logger.info(f'执行把组装链接写入数据库')
                             DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
