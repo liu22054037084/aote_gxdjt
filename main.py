@@ -106,9 +106,10 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                             logger.info(f'组装链接写入完成')
                     else:
                         logger.info(f'视频已经存在链接当中')
-                    logger.info(f'链接已经存在，但是需要更新一下，以防止链接出现问题需要手动更改！')
-                    DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
-                    logger.info(f'链接保险写入已完成！')
+
+                logger.info(f'链接已经存在，但是需要更新一下，以防止链接出现问题需要手动更改！')
+                DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
+                logger.info(f'链接保险写入已完成！')
 
                 qtb = SQL.select_rows(table_name='mac_vod', condition=f"vod_name='{list_b[0][0]}'")
                 if not qtb:
