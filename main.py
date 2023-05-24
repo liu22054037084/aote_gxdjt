@@ -81,7 +81,7 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                     else:
                         cp1 = cp1 + '#' + VideoUrl + cp  # 保证两个视频链接直接存在一个#用于区分视频每个链接的独立性
 
-                    if cp not in ys:
+                    if list_c[i][0] not in ys:
                         if not os.path.exists(gen_cp):  # 检查源文件是否存在
                             logger.info(f'路径不存在创建属于《{list_b[0][0]}》路径')
                             os.makedirs(gen_cp)
@@ -104,6 +104,11 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                             logger.info(f'执行把组装链接写入数据库')
                             DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
                             logger.info(f'组装链接写入完成')
+                    else:
+                        logger.info(f'视频已经存在链接当中')
+                    logger.info(f'链接已经存在，但是需要更新一下，以防止链接出现问题需要手动更改！')
+                    DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
+                    logger.info(f'链接保险写入已完成！')
 
                 qtb = SQL.select_rows(table_name='mac_vod', condition=f"vod_name='{list_b[0][0]}'")
                 if not qtb:
