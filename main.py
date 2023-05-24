@@ -6,11 +6,24 @@ import random
 import logging
 import filecmp
 import logging.handlers
+import requests
 from pypinyin import lazy_pinyin
 from dotenv import load_dotenv
 from get_files.mp4_files import mp4_files
 from sql_class.sql_ite import SQLiteDB
 from sql_class.my_sql import MySQLDB
+
+
+def download_image(url, file_name, download_path):
+    try:
+        response = requests.get(url)  # 发起GET请求获取图片内容
+        file_path = os.path.join(download_path, file_name)
+        with open(file_path, 'wb') as file:
+            file.write(response.content)  # 将图片内容写入文件
+        print("图片下载成功！")
+        return '成功'
+    except requests.exceptions.RequestException as e:
+        print("下载失败:", e)
 
 
 def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, cs=30):
@@ -44,31 +57,38 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
 
                 list_c = DB.query_target_table(tiao_jian=key, from_table="relay_table", zd_table="key", like_l=True)
 
-                q = 0
+                cp_up = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/"
 
-                if list_b[0][8] is None:
+                gen_cp = f"{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/"
+
+                if not os.path.exists(gen_cp):  # 检查源文件是否存在
+                    logger.info(f'路径不存在创建属于《{list_b[0][0]}》路径')
+                    os.makedirs(gen_cp)
+
+                if (list_b[0][8] or list_b[0][9]) is None:
                     vod_en = ''.join(lazy_pinyin(list_b[0][0]))
                     vod_letter = vod_en[0].upper()
-                    q = q + 1
+                    DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")
+
+                if 'gxdjt.cf' not in list_b[0][10]:
+                    cg = download_image(list_b[0][10], 'img.jpg', gen_cp)
+                    if cg == '成功':
+                        DB.update_rows('reserve_table', f"vod_pic = '{VideoUrl}{cp_up}img.jpg'", f"name = '{list_b[0][0]}'")
+                        logger.info(f'图片下载转换成功img.jpg并储存在OneDrive上，然后保存现在的链接，方便后面调用！')
 
                 if list_b[0][-2] is None:
                     continue
                 else:
                     if not ("<p>" in list_b[0][-2] or "</p>" in list_b[0][-2]):
                         vod_blurb = '<p>' + list_b[0][-2].replace('\t', '').replace('\n', '').replace(' ', '').replace('。', '。</p><p>').replace('！', '！</p><p>').replace('？', '？</p><p>').replace('<p></p>', '</p>') + '</p>'
-                        q = q + 1
-
-                if q == 1:
-                    DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")
-                elif q == 2:
-                    DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}', vod_blurb = '{vod_blurb}' ", f"name = '{list_b[0][0]}'")
+                        DB.update_rows('reserve_table', f"vod_blurb = '{vod_blurb}' ", f"name = '{list_b[0][0]}'")
 
                 cp1 = ''
 
                 for i in range(len(list_c)):
 
-                    cp = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/{list_c[i][0]}"
-                    gen_cp = f"{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/"
+                    cp = f"{cp_up}{list_c[i][0]}"
+                    
                     gen_fil = f'{gen_cp}{list_c[i][0]}'
 
                     if list_b[0][5] is None:
@@ -82,17 +102,14 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                         cp1 = cp1 + '#' + VideoUrl + cp  # 保证两个视频链接直接存在一个#用于区分视频每个链接的独立性
 
                     if list_c[i][0] not in ys:
-                        if not os.path.exists(gen_cp):  # 检查源文件是否存在
-                            logger.info(f'路径不存在创建属于《{list_b[0][0]}》路径')
-                            os.makedirs(gen_cp)
 
                         destination_file = os.path.join(gen_fil, f'{list_c[i][1]}')
                         if os.path.exists(destination_file):
                             # 比较源文件和目标文件是否相同
                             if filecmp.cmp(f'{list_c[i][1]}', gen_fil):
-                                logger.info(f'文件已存在且相同,跳过')
+                                logger.info(f'{list_c[i][0]}的文件已存在且相同,跳过')
                             else:
-                                logger.info(f'文件已存在且且不同进行覆盖！')
+                                logger.info(f'{list_c[i][0]}的文件已存在且且不同进行覆盖！')
                                 logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
                                 shutil.copy2(f'{list_c[i][1]}', gen_cp)
                                 logger.info(f'执行把组装链接写入数据库')
@@ -105,9 +122,9 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                             DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
                             logger.info(f'组装链接写入完成')
                     else:
-                        logger.info(f'视频已经存在链接当中')
+                        logger.info(f'{list_c[i][0]}的视频已经存在链接当中')
 
-                logger.info(f'链接已经存在，但是需要更新一下，以防止链接出现问题需要手动更改！')
+                logger.info(f'{list_b[0][0]}链接已经存在，但是需要更新一下，以防止链接出现问题需要手动更改！')
                 DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
                 logger.info(f'链接保险写入已完成！')
 
