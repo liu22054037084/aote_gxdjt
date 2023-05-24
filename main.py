@@ -68,6 +68,11 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                 for i in range(len(list_c)):
 
                     cp = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/{list_c[i][0]}"
+<<<<<<< HEAD
+                    gen_cp = f"{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/"
+                    gen_fil = f'{gen_cp}{list_c[i][0]}'
+=======
+>>>>>>> ed1fa42da40aaa3329181d3b0c1a71a4408ec5fc
 
                     if list_b[0][5] is None:
                         ys = '#'
@@ -80,25 +85,25 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                         cp1 = cp1 + '#' + VideoUrl + cp  # 保证两个视频链接直接存在一个#用于区分视频每个链接的独立性
 
                     if cp not in ys:
-                        if not os.path.exists(f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/'):  # 检查源文件是否存在
+                        if not os.path.exists(gen_cp):  # 检查源文件是否存在
                             logger.info(f'路径不存在创建属于《{list_b[0][0]}》路径')
-                            os.makedirs(f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/')
+                            os.makedirs(gen_cp)
 
-                        destination_file = os.path.join(f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/{list_c[i][0]}', f"{list_c[i][0]}")
+                        destination_file = os.path.join(gen_fil, f'{list_c[i][1]}')
                         if os.path.exists(destination_file):
                             # 比较源文件和目标文件是否相同
-                            if filecmp.cmp(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/{list_c[i][0]}'):
+                            if filecmp.cmp(f'{list_c[i][1]}', gen_fil):
                                 logger.info(f'文件已存在且相同,跳过')
                             else:
                                 logger.info(f'文件已存在且且不同进行覆盖！')
-                                logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/ 》》的视频转移！')
-                                shutil.copy2(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/')
+                                logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
+                                shutil.copy2(f'{list_c[i][1]}', gen_cp)
                                 logger.info(f'执行把组装链接写入数据库')
                                 DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
                                 logger.info(f'组装链接写入完成')
                         else:
-                            logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/ 》》的视频转移！')
-                            shutil.copy2(f'{list_c[i][1]}', f'{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/')
+                            logger.info(f'f"正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
+                            shutil.copy2(f'{list_c[i][1]}', gen_cp)
                             logger.info(f'执行把组装链接写入数据库')
                             DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
                             logger.info(f'组装链接写入完成')
@@ -275,6 +280,7 @@ def main_run():
         file_handler.setFormatter(formatter)
 
         # 将FileHandler添加到Logger中
+
         logger.addHandler(file_handler)
 
         db = SQLiteDB(db_file=sqlite_db_file)
