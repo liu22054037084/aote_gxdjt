@@ -57,9 +57,9 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
 
                 list_c = DB.query_target_table(tiao_jian=key, from_table="relay_table", zd_table="key", like_l=True)
 
-                cp_up = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/"
+                cp_up = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0].strip()}/"
 
-                gen_cp = f"{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]}/"
+                gen_cp = f"{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0].strip()}/"
 
                 if not os.path.exists(gen_cp):  # 检查源文件是否存在
                     logger.info(f'路径不存在创建属于《{list_b[0][0]}》路径')
@@ -88,7 +88,7 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                 for i in range(len(list_c)):
 
                     cp = f"{cp_up}{list_c[i][0]}"
-                    
+
                     gen_fil = f'{gen_cp}{list_c[i][0]}'
 
                     if list_b[0][5] is None:
@@ -103,8 +103,7 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
 
                     if list_c[i][0] not in ys:
 
-                        destination_file = os.path.join(gen_fil, f'{list_c[i][1]}')
-                        if os.path.exists(destination_file):
+                        if os.path.exists(gen_fil):
                             # 比较源文件和目标文件是否相同
                             if filecmp.cmp(f'{list_c[i][1]}', gen_fil):
                                 logger.info(f'{list_c[i][0]}的文件已存在且相同,跳过')
@@ -172,6 +171,7 @@ def main(FilesVideo, VideoUrl, GuaGen, DB, SQL, ReH, logger, vod_dplayer, c=0, c
                     logger.info(f"笑死了这次只更新了一下《{list_b[0][0]}》的视频链接！")
 
                     SQL.update_field(table_name='mac_vod', field_name="vod_play_url", new_value=f"'{cp1}'", conditions=[f"vod_name = '{list_b[0][0]}'"])
+
         DB.drop_table('relay_table')
         logger.info(f'完成新处理第{c}数据relay_table表删除！')
         logger.info(f'新处理的一次操作完成！')
