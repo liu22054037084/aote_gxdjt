@@ -8,8 +8,6 @@ set Today="%t:~0,4%年%t:~4,2%月%t:~6,2%日%t:~8,2%时%t:~10,2%分%t:~12,2%秒"
 
 git add .
 
-git pull origin main
-
 git commit -m %Today%
 
 git push -u origin main
