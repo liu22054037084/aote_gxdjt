@@ -14,12 +14,12 @@ from sql_class.sql_ite import SQLiteDB
 from sql_class.my_sql import MySQLDB
 
 
-def my_lists(FilesVideo, DB, ReH):
+def my_lists(FilesVideo, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
     """
     :param FilesVideo:
     :param DB: 本地数据的调用对象
     :param ReH: 正则的加载调用
-    :return:
+    :return: 返回集合进行去重列表
     """
     files, files_key = mp4_files(path=FilesVideo)
 
