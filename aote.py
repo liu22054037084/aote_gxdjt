@@ -15,6 +15,12 @@ from sql_class.my_sql import MySQLDB
 
 
 def my_lists(FilesVideo, DB, ReH):
+    """
+    :param FilesVideo:
+    :param DB: 本地数据的调用对象
+    :param ReH: 正则的加载调用
+    :return:
+    """
     files, files_key = mp4_files(path=FilesVideo)
 
     data = [(file_key, files[file_key]) for file_key in files_key]
@@ -28,7 +34,13 @@ def my_lists(FilesVideo, DB, ReH):
     return my_list
 
 
-def download_image(url, file_name, download_path):
+def download_image(url, file_name, download_path):  # 下载图片的函数
+    """
+    :param url: 下载链接
+    :param file_name: 下载后重新的命名包括后缀
+    :param download_path: 下载指定的地址
+    :return:
+    """
     try:
         response = requests.get(url)  # 发起GET请求获取图片内容
         file_path = os.path.join(download_path, file_name)
@@ -40,30 +52,49 @@ def download_image(url, file_name, download_path):
         print("下载失败:", e)
 
 
-def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):
+def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):  # 对影视一些信息加工用来符合影视网站所储存的信息模式的函数
+    """
+    :param gen_cp: 这个是以服务器为根，到达已经储存在挂在网盘各个资源的准确地址(这个地址是可以直接调用到某个文件的绝对路径，注意是以服务器主目录为跟)
+    :param logger: 日志的调用函数，不需要在意
+    :param list_b: 这是获取的reserve_table数据库指定数据主键name的数据(是一个二维数组，注意所有的DB本地数据库输出的均为二维数组)
+    :param DB: 本地数据的调用对象
+    :param VideoUrl: 这是直链的前分享地址
+    :param cp_up: 以服务器挂在的网盘为根目录，然后到达各个资源分类的路径
+    :return:
+    """
     if not os.path.exists(gen_cp):  # 检查源文件是否存在
         logger.info(f'路径不存在创建属于《{list_b[0][0]}》路径')
         os.makedirs(gen_cp)
 
     if (list_b[0][8] or list_b[0][9]) is None:
-        vod_en = ''.join(lazy_pinyin(list_b[0][0]))
-        vod_letter = vod_en[0].upper()
-        DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")
+        vod_en = ''.join(lazy_pinyin(list_b[0][0]))  # 汉字转拼音
+        vod_letter = vod_en[0].upper()  # 获取拼音大写
+        DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")  # 写入数据库
 
     if list_b[0][10] is not None:
         if 'gxdjt.cf' not in list_b[0][10]:
-            cg = download_image(list_b[0][10], 'img.jpg', gen_cp)
+            cg = download_image(list_b[0][10], 'img.jpg', gen_cp)  # 下载图片，进行储蓄
             if cg == '成功':
-                DB.update_rows('reserve_table', f"vod_pic = '{VideoUrl}{cp_up}img.jpg'", f"name = '{list_b[0][0]}'")
+                DB.update_rows('reserve_table', f"vod_pic = '{VideoUrl}{cp_up}img.jpg'", f"name = '{list_b[0][0]}'")  # 写入数据库，把获取调用链接重新写入数据库进行替换原来的链接数据，主要是为了随便获取的图片链接失效，把他保存后变成自己的调用
                 logger.info(f'图片下载转换成功img.jpg并储存在OneDrive上，然后保存现在的链接，方便后面调用！')
 
     if list_b[0][-2]:
         if not ("<p>" in list_b[0][-2] or "</p>" in list_b[0][-2]):
-            vod_blurb = '<p>' + list_b[0][-2].replace('\t', '').replace('\n', '').replace(' ', '').replace('。', '。</p><p>').replace('！', '！</p><p>').replace('？', '？</p><p>').replace('<p></p>', '</p>') + '</p>'
-            DB.update_rows('reserve_table', f"vod_blurb = '{vod_blurb}' ", f"name = '{list_b[0][0]}'")
+            vod_blurb = '<p>' + list_b[0][-2].replace('\t', '').replace('\n', '').replace(' ', '').replace('。', '。</p><p>').replace('！', '！</p><p>').replace('？', '？</p><p>').replace('<p></p>', '</p>') + '</p>'  # 对简介进行html加p标签的处理
+            DB.update_rows('reserve_table', f"vod_blurb = '{vod_blurb}' ", f"name = '{list_b[0][0]}'")  # 写入数据库
 
 
-def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):
+def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):  # 判断视频是否已经转移成功，然后组装所使用的视频外部的调用链接
+    """
+    :param list_c: 这是由relay_table列表的用模糊字段进行的模糊搜索返回的二维数组值(是一个二维数组，注意所有的DB本地数据库输出的均为二维数组)
+    :param cp_up:  这个是以服务器为根，到达已经储存在挂在网盘各个资源的文件夹(非文件的具体的绝对地址)
+    :param gen_cp: 这个是以服务器为根，到达已经储存在挂在网盘各个资源的准确地址(这个地址是可以直接调用到某个文件的绝对路径，注意是以服务器主目录为跟)
+    :param list_b: 这是获取的reserve_table数据库指定数据主键name的数据
+    :param VideoUrl: 这是直链的前分享地址
+    :param logger: 日志的调用函数，不需要在意
+    :param DB: 本地数据的调用对象
+    :return:
+    """
     cp1 = ''
 
     for i in range(len(list_c)):
@@ -107,7 +138,17 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):
     return cp1
 
 
-def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1, vod_dplayer):
+def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1, vod_dplayer):  # 对远程mysql数据库进行确认数据是否存在，存在则只会更新链接数据，不存在则重新组装写入写入一条新的数据(也就是影视网站当中会显示的内容)
+    """
+    :param SQL: 远程MySQL数据对象
+    :param list_b: 这是获取的reserve_table数据库指定数据主键name的数据(是一个二维数组，注意所有的DB本地数据库输出的均为二维数组)
+    :param DB: 本地数据的调用对象
+    :param key: 这是由集合去重后用for迭代的一个值
+    :param logger: 日志的调用函数，不需要在意
+    :param cp1: 组装的成品链接，每个链接是可以直接外部调用的，并且每个独立链接之间用#隔开(符合视频视频数据库链接储存方式)
+    :param vod_dplayer: 视频所需要播放器的调用id名称
+    :return:
+    """
     qtb = SQL.select_rows(table_name='mac_vod', condition=f"vod_name='{list_b[0][0]}'")
     if not qtb:
         l_b = DB.query_target_table(tiao_jian=key, from_table="reserve_table", zd_table="like_l")
@@ -154,7 +195,22 @@ def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1, vod_dplayer):
         SQL.update_field(table_name='mac_vod', field_name="vod_play_url", new_value=f"'{cp1}'", conditions=[f"vod_name = '{list_b[0][0]}'"])
 
 
-def main_major(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c=0, cs=30):
+def main_major(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c=0, cs=30):  # 这个是运行函数的主体函数
+
+    """
+    :param logger: 日志的调用函数，不需要在意
+    :param DB: 本地数据的调用对象
+    :param FilesVideo:
+    :param ReH: 正则的加载调用
+    :param GuaGen: 目标路径
+    :param VideoUrl: 这是直链的前分享地址
+    :param SQL: 远程MySQL数据对象
+    :param vod_dplayer: 视频所需要播放器的调用id名称
+    :param c: 简单的集数函数，用来确认当前已经循环多少次了
+    :param cs: 每一次获取数据库对象后循环的次数(防止数据库对象访问失效，当一次数据库对象已经循环cs次数后用于判断跳出此次循环，以达到重新获取数据库对象的过程)
+    :return:
+    """
+
     while True:
 
         c = c + 1
@@ -200,7 +256,12 @@ def main_major(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, 
         time.sleep(30)
 
 
-def get_run():
+def get_run():  # 获取运行所需要的.env所储存的各种变量以及log变量定义
+
+    """
+    :return:
+    """
+
     # 加载 .env 文件中的环境变量
     load_dotenv()
 
@@ -243,54 +304,66 @@ def get_run():
     return logger, files_video, video_url, gua_gen, vod_dplayer, mysql_host, mysql_user, mysql_password, mysql_database, sqlite_db_file
 
 
-def main_run():
+def main_run():  # main第一次运行函数，用来确认配置文件是否存在，不存在创建配置函数
+
+    """
+    :return:
+    """
+
     # 检测是否存在 .env 文件
     if not os.path.exists('.env'):
         # 创建 .env 文件
         with open('.env', 'w') as file:
             # 写入内容到 .env 文件
             file.write("""
-            [BD]
-            # 用来添加获取视频的地址(最后要有/)
-            files_video=
-            
-            # 这是直连的前分享地址(最后要有/)
-            video_url=
-            
-            # 根目录到达要转移的地址或者是相对地址(最后不要有/)
-            gua_gen=
-            
-            # 选择使用的播放器默认dplayer
-            vod_dplayer=dplayer
-            
-            # log保留天数默认为七天
-            LOG_RETENTION_DAYS=
-            
-            [MySQLDB]
-            # mysql数据库地址
-            host=
-            
-            # mysql数据库账户
-            user=
-            
-            # mysql数据库密码
-            password=
-            
-            # mysql数据库名
-            database=
-            
-            [SQLiteDB]
-            # 本地数据库地址
-            db_file=
+                [BD]
+                # 需转移的目录                             例如:/store/temp/download
+                files_video=
+                
+                # 这是直链的前分享地址                      例如:https://video.example.com/file
+                video_url=
+                
+                # 目标路径                                 例如/store/void
+                gua_gen=
+                
+                # 选择使用的播放器默认dplayer
+                vod_dplayer=dplayer
+                
+                # log保留天数默认为七天
+                LOG_RETENTION_DAYS=7
+                
+                [MySQLDB]
+                # mysql数据库地址                          例如:https://mysql.example.com/
+                host=
+                
+                # mysql数据库账户                          例如:admin
+                user=
+                
+                # mysql数据库密码                          例如:password
+                password=
+                
+                # mysql数据库名                            例如:my_void
+                database=
+                
+                [SQLiteDB]
+                # 本地数据库地址(缓存,记录状态)              例如:./date/DS.db
+                db_file=
+
             """)
 
         # 停止运行
-        raise SystemExit('已创建 .env 文件')
+        raise SystemExit('已创建 .env 文件，请写入相关配置！')
 
 
-def main():
+def main():  # 运行函数
+    """
+    :return:
+    """
+
     main_run()
+
     logger, files_video, video_url, gua_gen, vod_dplayer, mysql_host, mysql_user, mysql_password, mysql_database, sqlite_db_file = get_run()
+
     try:
 
         logger.info('程序开始运行')
