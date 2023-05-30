@@ -20,8 +20,15 @@ def chech_env_bool():  # main第一次运行函数，用来确认配置文件是
                 [log_l]
                 #日志等级(目前拥有ERROR/INFO)              例如:ERROR
                 log_level=error
+                
                 #日志名称                                 例如:error.log
                 log_name=error.log
+                
+                # log保留天数默认为七天
+                LOG_RETENTION_DAYS=7                
+                
+                # log分割防止一个logo文件过大以天为单位默认7
+                LOG_INTERVAL_DAYS=7
 
                 [BD]
                 # 需转移的目录                             例如:/store/temp/download
@@ -35,9 +42,6 @@ def chech_env_bool():  # main第一次运行函数，用来确认配置文件是
                 
                 # 选择使用的播放器默认dplayer
                 vod_dplayer=dplayer
-                
-                # log保留天数默认为七天
-                LOG_RETENTION_DAYS=7
                 
                 [MySQLDB]
                 # mysql数据库地址                          例如:https://mysql.example.com/
@@ -85,15 +89,21 @@ def get_env_file():  # 获取运行所需要的.env所储存的各种变量以�
     logger.setLevel(log_level)
 
     # 创建 TimedRotatingFileHandler 处理器
-    handler = TimedRotatingFileHandler(filename=log_name, when='midnight', interval=1, backupCount=int(os.getenv('LOG_RETENTION_DAYS')))
+    handler = TimedRotatingFileHandler(filename=log_name, when='midnight', interval=int(os.getenv('LOG_RETENTION_DAYS')), backupCount=int(os.getenv('LOG_RETENTION_DAYS')))
     handler.setLevel(log_level)
+
+    # 创建 StreamHandler 处理器
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(log_level)
 
     # 配置日志格式
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
+    stream_handler.setFormatter(formatter)
 
     # 将处理器添加到日志记录器
     logger.addHandler(handler)
+    logger.addHandler(stream_handler)
 
     # 从 .env 文件中获取 BD 配置
     files_video = os.getenv('files_video')
