@@ -9,11 +9,12 @@ from get_files.mp4_files import mp4_files
 from sql_class.sql_ite import SQLiteDB
 from sql_class.my_sql import MySQLDB
 from use import check_env
-from use import download_image
+from use import download_image as d_img
 
 
-def filter_video(logger,FilesVideo, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
+def filter_video(logger, FilesVideo, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
     """
+    :param logger:  日志调用
     :param FilesVideo:需要转移的目标
     :param DB: 本地数据的调用对象
     :param ReH: 正则的加载调用
@@ -54,7 +55,7 @@ def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):  # 对影
 
     if list_b[0][10] is not None:
         if 'gxdjt.cf' not in list_b[0][10]:
-            cg = download_image(list_b[0][10], 'img.jpg', gen_cp)  # 下载图片，进行储蓄
+            cg = d_img.download_image(list_b[0][10], 'img.jpg', gen_cp)  # 下载图片，进行储蓄
             if cg == '成功':
                 DB.update_rows('reserve_table', f"vod_pic = '{VideoUrl}{cp_up}img.jpg'",
                                f"name = '{list_b[0][0]}'")  # 写入数据库，把获取调用链接重新写入数据库进行替换原来的链接数据，主要是为了随便获取的图片链接失效，把他保存后变成自己的调用
@@ -150,6 +151,9 @@ def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1,
         elif l_b[0][3] == 10:
             startq = 10
             endq = 12
+        else:
+            startq = ''
+            endq = ''
         if l_b[0][6] == 1:
             type_id = "'大陆'"
             q = 2
@@ -168,6 +172,10 @@ def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1,
         elif l_b[0][6] == 6:
             type_id = "'欧美'"
             q = 1
+        else:
+            q = ''
+            type_id = ''
+
         randomq = random.randint(startq, endq)
         random_day = random.randint(1, 28)  # 假设每个月都是28天
         tm = f"'{l_b[0][2]}-{randomq:02d}-{random_day:02d}'"
@@ -218,7 +226,7 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c
 
         logger.info('处理开始执行了！')
 
-        my_list = filter_video(logger,FilesVideo=FilesVideo, DB=DB, ReH=ReH)
+        my_list = filter_video(logger, FilesVideo=FilesVideo, DB=DB, ReH=ReH)
 
         for key in my_list:
 

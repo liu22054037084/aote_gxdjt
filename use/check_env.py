@@ -85,7 +85,7 @@ def get_env_file():  # 获取运行所需要的.env所储存的各种变量以�
     logger.setLevel(log_level)
 
     # 创建 TimedRotatingFileHandler 处理器
-    handler = TimedRotatingFileHandler(filename=log_name, when='midnight', interval=1, backupCount=7)
+    handler = TimedRotatingFileHandler(filename=log_name, when='midnight', interval=1, backupCount=int(os.getenv('LOG_RETENTION_DAYS')))
     handler.setLevel(log_level)
 
     # 配置日志格式
