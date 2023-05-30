@@ -3,25 +3,23 @@ import os
 import time
 import shutil
 import random
-import logging
 import filecmp
-import logging.handlers
-import requests
 from pypinyin import lazy_pinyin
-from dotenv import load_dotenv
 from get_files.mp4_files import mp4_files
 from sql_class.sql_ite import SQLiteDB
 from sql_class.my_sql import MySQLDB
+from use import check_env
+from use import download_image
 
 
-def my_lists(FilesVideo, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
+def filter_video(logger,FilesVideo, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
     """
-    :param FilesVideo:
+    :param FilesVideo:需要转移的目标
     :param DB: 本地数据的调用对象
     :param ReH: 正则的加载调用
     :return: 返回集合进行去重列表
     """
-    files, files_key = mp4_files(path=FilesVideo)
+    files, files_key = mp4_files(logger, path=FilesVideo)
 
     data = [(file_key, files[file_key]) for file_key in files_key]
 
@@ -32,24 +30,6 @@ def my_lists(FilesVideo, DB, ReH):  # 这个是处理获取的视频地址与名
     my_list = [key for key in list(set(files_key)) if key is not None and key.strip() != '']
 
     return my_list
-
-
-def download_image(url, file_name, download_path):  # 下载图片的函数
-    """
-    :param url: 下载链接
-    :param file_name: 下载后重新的命名包括后缀
-    :param download_path: 下载指定的地址
-    :return:
-    """
-    try:
-        response = requests.get(url)  # 发起GET请求获取图片内容
-        file_path = os.path.join(download_path, file_name)
-        with open(file_path, 'wb') as file:
-            file.write(response.content)  # 将图片内容写入文件
-        print("图片下载成功！")
-        return '成功'
-    except requests.exceptions.RequestException as e:
-        print("下载失败:", e)
 
 
 def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):  # 对影视一些信息加工用来符合影视网站所储存的信息模式的函数
@@ -69,18 +49,22 @@ def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):  # 对影
     if (list_b[0][8] or list_b[0][9]) is None:
         vod_en = ''.join(lazy_pinyin(list_b[0][0]))  # 汉字转拼音
         vod_letter = vod_en[0].upper()  # 获取拼音大写
-        DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")  # 写入数据库
+        DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'",
+                       f"name = '{list_b[0][0]}'")  # 写入数据库
 
     if list_b[0][10] is not None:
         if 'gxdjt.cf' not in list_b[0][10]:
             cg = download_image(list_b[0][10], 'img.jpg', gen_cp)  # 下载图片，进行储蓄
             if cg == '成功':
-                DB.update_rows('reserve_table', f"vod_pic = '{VideoUrl}{cp_up}img.jpg'", f"name = '{list_b[0][0]}'")  # 写入数据库，把获取调用链接重新写入数据库进行替换原来的链接数据，主要是为了随便获取的图片链接失效，把他保存后变成自己的调用
+                DB.update_rows('reserve_table', f"vod_pic = '{VideoUrl}{cp_up}img.jpg'",
+                               f"name = '{list_b[0][0]}'")  # 写入数据库，把获取调用链接重新写入数据库进行替换原来的链接数据，主要是为了随便获取的图片链接失效，把他保存后变成自己的调用
                 logger.info(f'图片下载转换成功img.jpg并储存在OneDrive上，然后保存现在的链接，方便后面调用！')
 
     if list_b[0][-2]:
         if not ("<p>" in list_b[0][-2] or "</p>" in list_b[0][-2]):
-            vod_blurb = '<p>' + list_b[0][-2].replace('\t', '').replace('\n', '').replace(' ', '').replace('。', '。</p><p>').replace('！', '！</p><p>').replace('？', '？</p><p>').replace('<p></p>', '</p>') + '</p>'  # 对简介进行html加p标签的处理
+            vod_blurb = '<p>' + list_b[0][-2].replace('\t', '').replace('\n', '').replace(' ', '').replace('。',
+                                                                                                           '。</p><p>').replace(
+                '！', '！</p><p>').replace('？', '？</p><p>').replace('<p></p>', '</p>') + '</p>'  # 对简介进行html加p标签的处理
             DB.update_rows('reserve_table', f"vod_blurb = '{vod_blurb}' ", f"name = '{list_b[0][0]}'")  # 写入数据库
 
 
@@ -121,7 +105,7 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):  # 
                     logger.info(f'{list_c[i][0]}的文件已存在且相同,跳过')
                 else:
                     logger.info(f'{list_c[i][0]}的文件已存在且且不同进行覆盖！')
-                    logger.info(f'f"正在执行》》 {gen_cp} 到 {list_c[i][1]} 》》的视频转移！')
+                    logger.info(f'f"正在执行 《 {gen_cp} 》到 《 {list_c[i][1]} 》的视频转移！')
                     shutil.copy2(f'{list_c[i][1]}', gen_cp)
                     logger.info(f'执行把组装链接写入数据库')
                     DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
@@ -130,7 +114,8 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):  # 
                 logger.info(f'f"正在执行》》 {gen_cp} 到 {list_c[i][1]} 》》的视频转移！')
                 shutil.copy2(f'{list_c[i][1]}', gen_cp)
                 logger.info(f'执行把组装链接写入数据库')
-                DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
+                DB.update_rows('reserve_table', f"url_video_path = '{cp1}'",
+                               f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
                 logger.info(f'组装链接写入完成')
         else:
             logger.info(f'{list_c[i][0]}的视频已经存在链接当中')
@@ -138,7 +123,8 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):  # 
     return cp1
 
 
-def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1, vod_dplayer):  # 对远程mysql数据库进行确认数据是否存在，存在则只会更新链接数据，不存在则重新组装写入写入一条新的数据(也就是影视网站当中会显示的内容)
+def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1,
+                              vod_dplayer):  # 对远程mysql数据库进行确认数据是否存在，存在则只会更新链接数据，不存在则重新组装写入写入一条新的数据(也就是影视网站当中会显示的内容)
     """
     :param SQL: 远程MySQL数据对象
     :param list_b: 这是获取的reserve_table数据库指定数据主键name的数据(是一个二维数组，注意所有的DB本地数据库输出的均为二维数组)
@@ -185,22 +171,31 @@ def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1, vod_dplayer):  
         randomq = random.randint(startq, endq)
         random_day = random.randint(1, 28)  # 假设每个月都是28天
         tm = f"'{l_b[0][2]}-{randomq:02d}-{random_day:02d}'"
-        logger.info(f"笑死了开始第一次添加《{list_b[0][0]}》的视频数据！")
-        SQL.insert_row(table_name='mac_vod', headers=["type_id", "vod_name", "vod_sub", "vod_en", "vod_pic", "vod_pic_thumb", "vod_pic_slide", "vod_pic_screenshot", "vod_letter", "vod_class", "vod_content", "vod_pubdate", "vod_area", "vod_lang", "vod_year", "vod_state", "vod_time", "vod_time_add", "vod_time_hits", "vod_play_url", "vod_trysee", "vod_play_from", "vod_play_server", "vod_status", "vod_level"],
-                       values=[q, f"'{l_b[0][0]}'", f"'{l_b[0][7]}'", f"'{l_b[0][8]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][9]}'", f"'{l_b[0][3]}月'", f"'{l_b[0][11]}'", tm, type_id, type_id, l_b[0][2], f"'{l_b[0][4]}'", l_b[0][12], l_b[0][12], l_b[0][12], f"'{cp1}'", 1, f"'{vod_dplayer}'", "'no'", 1, 1])
+        logger.info(f"开始添加《{list_b[0][0]}》的视频数据！")
+        SQL.insert_row(table_name='mac_vod',
+                       headers=["type_id", "vod_name", "vod_sub", "vod_en", "vod_pic", "vod_pic_thumb", "vod_pic_slide",
+                                "vod_pic_screenshot", "vod_letter", "vod_class", "vod_content", "vod_pubdate",
+                                "vod_area", "vod_lang", "vod_year", "vod_state", "vod_time", "vod_time_add",
+                                "vod_time_hits", "vod_play_url", "vod_trysee", "vod_play_from", "vod_play_server",
+                                "vod_status", "vod_level"],
+                       values=[q, f"'{l_b[0][0]}'", f"'{l_b[0][7]}'", f"'{l_b[0][8]}'", f"'{l_b[0][10]}'",
+                               f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][10]}'", f"'{l_b[0][9]}'",
+                               f"'{l_b[0][3]}月'", f"'{l_b[0][11]}'", tm, type_id, type_id, l_b[0][2], f"'{l_b[0][4]}'",
+                               l_b[0][12], l_b[0][12], l_b[0][12], f"'{cp1}'", 1, f"'{vod_dplayer}'", "'no'", 1, 1])
     elif qtb[0][4] == list_b[0][0]:
 
-        logger.info(f"笑死了这次只更新了一下《{list_b[0][0]}》的视频链接！")
+        logger.info(f"更新了一下《{list_b[0][0]}》的视频链接！")
 
-        SQL.update_field(table_name='mac_vod', field_name="vod_play_url", new_value=f"'{cp1}'", conditions=[f"vod_name = '{list_b[0][0]}'"])
+        SQL.update_field(table_name='mac_vod', field_name="vod_play_url", new_value=f"'{cp1}'",
+                         conditions=[f"vod_name = '{list_b[0][0]}'"])
 
 
-def main_major(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c=0, cs=30):  # 这个是运行函数的主体函数
+def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c=0, cs=30):  # 这个是运行函数的主体函数
 
     """
     :param logger: 日志的调用函数，不需要在意
     :param DB: 本地数据的调用对象
-    :param FilesVideo:
+    :param FilesVideo:需要转移的文件路径
     :param ReH: 正则的加载调用
     :param GuaGen: 目标路径
     :param VideoUrl: 这是直链的前分享地址
@@ -217,13 +212,13 @@ def main_major(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, 
 
         if c == cs:
             break
-        logger.info(f'新处理第{c}数据relay_table表创建！')
+        logger.info(f'开始处理第{c}次数据表！')
 
         DB.create_table('relay_table', 'key TEXT PRIMARY KEY ASC ON CONFLICT REPLACE, files TEXT')
 
         logger.info('处理开始执行了！')
 
-        my_list = my_lists(FilesVideo=FilesVideo, DB=DB, ReH=ReH)
+        my_list = filter_video(logger,FilesVideo=FilesVideo, DB=DB, ReH=ReH)
 
         for key in my_list:
 
@@ -238,121 +233,25 @@ def main_major(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, 
 
                 information_handling(gen_cp=gen_cp, logger=logger, list_b=list_b, DB=DB, VideoUrl=VideoUrl, cp_up=cp_up)
 
-                cp1 = url_handling_write(list_c=list_c, cp_up=cp_up, gen_cp=gen_cp, list_b=list_b, VideoUrl=VideoUrl, logger=logger, DB=DB)
+                cp1 = url_handling_write(list_c=list_c, cp_up=cp_up, gen_cp=gen_cp, list_b=list_b, VideoUrl=VideoUrl,
+                                         logger=logger, DB=DB)
 
-                sql_decide_handling_write(SQL=SQL, list_b=list_b, DB=DB, key=key, logger=logger, cp1=cp1, vod_dplayer=vod_dplayer)
+                sql_decide_handling_write(SQL=SQL, list_b=list_b, DB=DB, key=key, logger=logger, cp1=cp1,
+                                          vod_dplayer=vod_dplayer)
 
                 logger.info(f'{list_b[0][0]}链接已经存在，但是需要更新一下，以防止链接出现问题需要手动更改！')
 
-                DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
+                DB.update_rows('reserve_table', f"url_video_path = '{cp1}'",
+                               f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
 
                 logger.info(f'链接保险写入已完成！')
 
         DB.drop_table('relay_table')
         logger.info(f'完成新处理第{c}数据relay_table表删除！')
         logger.info(f'新处理的一次操作完成！')
-        logger.info('进入三十秒沉默！')
+        logger.info('进入三十秒沉默！\n')
 
         time.sleep(30)
-
-
-def get_run():  # 获取运行所需要的.env所储存的各种变量以及log变量定义
-
-    """
-    :return:
-    """
-
-    # 加载 .env 文件中的环境变量
-    load_dotenv()
-
-    # 添加日志配置
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-    logger = logging.getLogger('main_run')
-    logger.setLevel(logging.DEBUG)
-
-    # 从环境变量获取保留日期，如果未定义，则默认为七天
-    log_retention_days = int(os.getenv('LOG_RETENTION_DAYS', 7))
-
-    # 创建FileHandler，并设置日志文件名和保留时间
-    log_file = 'auto_delete_log_date.log'
-    file_handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', backupCount=log_retention_days)
-    file_handler.setLevel(logging.DEBUG)
-
-    # 设置日志格式
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(formatter)
-
-    # 将FileHandler添加到Logger中
-    logger.addHandler(file_handler)
-
-    # 从 .env 文件中获取 BD 配置
-    files_video = os.getenv('files_video')
-    video_url = os.getenv('video_url')
-    gua_gen = os.getenv('gua_gen')
-    vod_dplayer = os.getenv('vod_dplayer')
-
-    # 从 .env 文件中获取 MySQLDB 配置
-    mysql_host = os.getenv('host')
-    mysql_user = os.getenv('user')
-    mysql_password = os.getenv('password')
-    mysql_database = os.getenv('database')
-
-    # 从 .env 文件中获取 SQLiteDB 配置
-    sqlite_db_file = os.getenv('db_file')
-
-    return logger, files_video, video_url, gua_gen, vod_dplayer, mysql_host, mysql_user, mysql_password, mysql_database, sqlite_db_file
-
-
-def main_run():  # main第一次运行函数，用来确认配置文件是否存在，不存在创建配置函数
-
-    """
-    :return:
-    """
-
-    # 检测是否存在 .env 文件
-    if not os.path.exists('.env'):
-        # 创建 .env 文件
-        with open('.env', 'w') as file:
-            # 写入内容到 .env 文件
-            file.write("""
-                [BD]
-                # 需转移的目录                             例如:/store/temp/download
-                files_video=
-                
-                # 这是直链的前分享地址                      例如:https://video.example.com/file
-                video_url=
-                
-                # 目标路径                                 例如/store/void
-                gua_gen=
-                
-                # 选择使用的播放器默认dplayer
-                vod_dplayer=dplayer
-                
-                # log保留天数默认为七天
-                LOG_RETENTION_DAYS=7
-                
-                [MySQLDB]
-                # mysql数据库地址                          例如:https://mysql.example.com/
-                host=
-                
-                # mysql数据库账户                          例如:admin
-                user=
-                
-                # mysql数据库密码                          例如:password
-                password=
-                
-                # mysql数据库名                            例如:my_void
-                database=
-                
-                [SQLiteDB]
-                # 本地数据库地址(缓存,记录状态)              例如:./date/DS.db
-                db_file=
-
-            """)
-
-        # 停止运行
-        raise SystemExit('已创建 .env 文件，请写入相关配置！')
 
 
 def main():  # 运行函数
@@ -360,9 +259,9 @@ def main():  # 运行函数
     :return:
     """
 
-    main_run()
+    check_env.chech_env_bool()  # check == true
 
-    logger, files_video, video_url, gua_gen, vod_dplayer, mysql_host, mysql_user, mysql_password, mysql_database, sqlite_db_file = get_run()
+    logger, files_video, video_url, gua_gen, vod_dplayer, mysql_host, mysql_user, mysql_password, mysql_database, sqlite_db_file = check_env.get_env_file()
 
     try:
 
@@ -371,17 +270,20 @@ def main():  # 运行函数
         cs_z = 0
 
         while True:
-            re_h = re.compile(r'(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*')
+            re_h = re.compile(
+                r'(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*')  # 匹配 {num}
             db = SQLiteDB(db_file=sqlite_db_file)
             sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
             logger.info('数据库全部连接成功')
             logger.info(f'第{cs_z}数据库更新')
 
             cs_z += 1
-            main_major(logger=logger, DB=db, FilesVideo=files_video, ReH=re_h, GuaGen=gua_gen, VideoUrl=video_url, SQL=sql, vod_dplayer=vod_dplayer)
+            main_loop(logger=logger, DB=db, FilesVideo=files_video, ReH=re_h, GuaGen=gua_gen, VideoUrl=video_url,
+                      SQL=sql, vod_dplayer=vod_dplayer)
+
             logger.info(f'完成{cs_z}次完循环处理！')
     finally:
 
         db = SQLiteDB(db_file=sqlite_db_file)
         db.drop_table('relay_table')
-        logger.info(f'错误或者强制退出')
+        logger.error(f'数据库连接错误或程序遭到强制退出!')
