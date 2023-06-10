@@ -235,7 +235,7 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, m
 
         logger.info(f'获取{FilesVideo}更新时间成功，进行与所储存的上一次获取的更新日期进行比对！')
 
-        if modified_time_A == modified_time_Z:
+        if modified_time_A != modified_time_Z:
 
             logger.info(f'发现文件夹日期更新，现在开始执行文件扫描程序！')
 
