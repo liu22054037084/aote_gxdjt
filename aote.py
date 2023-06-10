@@ -262,7 +262,7 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, m
             list_b = DB.query_target_table(tiao_jian=key, from_table="reserve_table", zd_table="like_l")
 
             if list_b is not None:
-                
+
                 list_c = DB.query_target_table(tiao_jian=key, from_table="relay_table", zd_table="key", like_l=True)
 
                 cp_up = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0].strip()}/"
@@ -301,7 +301,7 @@ def main():  # 运行函数
 
     logger, files_video, video_url, gua_gen, vod_dplayer, mysql_host, mysql_user, mysql_password, mysql_database, sqlite_db_file = check_env.get_env_file()
 
-    modified_time_Z = ''
+    modified_time_Z = ''  # 保存FilesVideo文件的更新时间存储
 
     try:
 
