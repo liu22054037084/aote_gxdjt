@@ -250,7 +250,9 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, m
 
             logger.info(f'30s以已经度过，开启下一轮！（break结束此次循环）')
 
-            break
+            DB.drop_table('relay_table')
+
+            continue
 
         my_list = filter_video(files=files, files_key=files_key, DB=DB, ReH=ReH)
 
