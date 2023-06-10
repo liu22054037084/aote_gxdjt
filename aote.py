@@ -3,25 +3,25 @@ import os
 import time
 import shutil
 import random
+import os.path
 import filecmp
-from pypinyin import lazy_pinyin
-from get_files.mp4_files import mp4_files
-from sql_class.sql_ite import SQLiteDB
-from sql_class.my_sql import MySQLDB
+import datetime
 from use import check_env
+from pypinyin import lazy_pinyin
+from sql_class.my_sql import MySQLDB
+from sql_class.sql_ite import SQLiteDB
 from use import download_image as d_img
+from get_files.mp4_files import mp4_files
 
 
-def filter_video(logger, FilesVideo, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
+def filter_video(files, files_key, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
     """
-    :param logger:  日志调用
-    :param FilesVideo:需要转移的目标
+    :param files_key:
+    :param files:
     :param DB: 本地数据的调用对象
     :param ReH: 正则的加载调用
     :return: 返回集合进行去重列表
     """
-    files, files_key = mp4_files(logger, path=FilesVideo)
-
     data = [(file_key, files[file_key]) for file_key in files_key]
 
     DB.insert_many_rows("relay_table", data, "(key, files)")
@@ -198,9 +198,10 @@ def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1,
                          conditions=[f"vod_name = '{list_b[0][0]}'"])
 
 
-def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c=0, cs=30):  # 这个是运行函数的主体函数
+def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, modified_time_Z, c=0, cs=30):  # 这个是运行函数的主体函数
 
     """
+    :param modified_time_Z: 储存FilesVideo更新时间
     :param logger: 日志的调用函数，不需要在意
     :param DB: 本地数据的调用对象
     :param FilesVideo:需要转移的文件路径
@@ -226,7 +227,32 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c
 
         logger.info('处理开始执行了！')
 
-        my_list = filter_video(logger, FilesVideo=FilesVideo, DB=DB, ReH=ReH)
+        timestamp = os.path.getmtime(FilesVideo)
+
+        logger.info(f'开始获取{FilesVideo}更新时间！')
+
+        modified_time_A = datetime.datetime.fromtimestamp(timestamp)  # 获取FilesVideo更新日期
+
+        logger.info(f'获取{FilesVideo}更新时间成功，进行与所储存的上一次获取的更新日期进行比对！')
+
+        if modified_time_A == modified_time_Z:
+
+            logger.info(f'发现文件夹日期更新，现在开始执行文件扫描程序！')
+
+            files, files_key = mp4_files(logger, path=FilesVideo)
+
+            modified_time_Z = modified_time_A
+        else:
+
+            logger.info(f'很遗憾，mad文件并未更新，为了不浪费算力和后台，现在摆烂30s！')
+
+            time.sleep(30)
+
+            logger.info(f'30s以已经度过，开启下一轮！（break结束此次循环）')
+
+            break
+
+        my_list = filter_video(files=files, files_key=files_key, DB=DB, ReH=ReH)
 
         for key in my_list:
 
@@ -271,6 +297,8 @@ def main():  # 运行函数
 
     logger, files_video, video_url, gua_gen, vod_dplayer, mysql_host, mysql_user, mysql_password, mysql_database, sqlite_db_file = check_env.get_env_file()
 
+    modified_time_Z = ''
+
     try:
 
         logger.info('程序开始运行')
@@ -287,7 +315,7 @@ def main():  # 运行函数
 
             cs_z += 1
             main_loop(logger=logger, DB=db, FilesVideo=files_video, ReH=re_h, GuaGen=gua_gen, VideoUrl=video_url,
-                      SQL=sql, vod_dplayer=vod_dplayer)
+                      SQL=sql, vod_dplayer=vod_dplayer, modified_time_Z=modified_time_Z)
 
             logger.info(f'完成{cs_z}次完循环处理！')
     finally:
