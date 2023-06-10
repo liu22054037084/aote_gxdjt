@@ -242,6 +242,7 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, m
             files, files_key = mp4_files(logger, path=FilesVideo)
 
             modified_time_Z = modified_time_A
+
         else:
 
             logger.info(f'很遗憾，mad文件并未更新，为了不浪费算力和后台，现在摆烂30s！')
@@ -261,6 +262,7 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, m
             list_b = DB.query_target_table(tiao_jian=key, from_table="reserve_table", zd_table="like_l")
 
             if list_b is not None:
+                
                 list_c = DB.query_target_table(tiao_jian=key, from_table="relay_table", zd_table="key", like_l=True)
 
                 cp_up = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0].strip()}/"
