@@ -1,0 +1,25 @@
+site_name: QBTorrentCMS
+
+site_author: 爱则心痛
+
+site_description: 这是一个半自动的qb（qbittorrent）接管推送bt下载并对cms10更新脚本
+
+repo_name: QB-Torrent-CMS
+
+repo_url: https://github.com/liu22054037084/QBTorrentCMS.git
+
+copyright: GPL-3.0 license
+
+theme:
+  name: material
+
+  language: zh
+
+  highlightjs: true
+
+nav:
+  - index.md
+  - help.md
+  - self-host.md
+  - license.md
+  - aboutv1.md
