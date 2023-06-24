@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="None">
+        
+        
+        <link rel="shortcut icon" href="img/favicon.ico">
+        <title>My Docs</title>
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/font-awesome.min.css" rel="stylesheet">
+        <link href="css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
+
+        <script src="js/jquery-1.10.2.min.js" defer></script>
+        <script src="js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body class="homepage">
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href=".">My Docs</a>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#qbtorrentcms" class="nav-link">QBTorrentCMS</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#_2" class="nav-link">各个文件下文件作用</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#_4" class="nav-link">我们附带了上传和拉取，嘛……打命令很麻烦，不如搞个能偷懒的~</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="qbtorrentcms">QBTorrentCMS</h1>
+<h3 id="qbqbittorrentbtcms10">这是一个半自动的qb（qbittorrent）接管推送bt下载并对cms10更新脚本</h3>
+<h6 id="btrsscms10indexphp">它可以利用bt的rss订阅下载后，扫描下载位置的视频位置，并且可以把他移动到指定位置也可以自己设置取消（我们利用网盘挂载，直接把他转移到相关网盘里面，利用其他的网盘映射工具并且可以生成直链接的进行加工，用来减少服务器的占用！),这里面我们已经设置了最优的cms10的数据库写入，建议根据不同需求进行修改（大部分不用修改，只需要自己修改一下分类之类的即可，修改分类的时候也请修改index.php里面的分类，当然这一切看个人需求！）</h6>
+<h5 id="_1">目前这个项目只是有我们个人使用，后期优化以后，更符合大众以后我们会对其写相关的使用文档！</h5>
+<h1 id="_2">各个文件下文件作用</h1>
+<h4 id="sql_class">sql_class</h4>
+<h6 id="sqlmysqlsqlite">是我写的sql操作的类，里面主要有两个分别是mysql与sqlite的操作，虽然有部分注释，但是注释并不完全，而且根据自己的使用，改动比较大。</h6>
+<h4 id="get_files">get_files</h4>
+<h6 id="_3">单纯的获取某个文件夹下面的某个后缀的所有文件，包括子文件内部的，为了追求速度，大量的占用了内存，写的也比较怪。</h6>
+<h4 id="v3_api">v3_api</h4>
+<h6 id="cloudreveapicloudrevev3">在项目中，并没有使用到，这个是Cloudreve的api使用，我们自己摸索的，但是后来舍弃了，不是不好用只是和我们用的其他内容相冲突（比如两个Cloudreve在一个服务器会因为v3调用的问题而冲突）</h6>
+<h4 id="assets">assets</h4>
+<h6 id="phpsqlitemainpysqlitemysqlsqlitesqlite">这个里面放的是一个php网页这个网页，用可视化对sqlite进行部分操作，然后主体程序main.py用sqlite当作储存与条件库进行操作后对mysql写入，这是我们妥协后的产物，毕竟sqlite的功能能省去很多我们自己写的代码（比如说排序与模糊搜索之类的，当然要是后期有更好的办法也许会舍弃，但是我估计不会，毕竟我会用sqlite储存一部分东西作为备份来使用。）</h6>
+<h2 id="_4">我们附带了上传和拉取，嘛……打命令很麻烦，不如搞个能偷懒的~</h2>
+<h3 id="pyinstaller">使用pyinstaller可以进行编译</h3>
+<p>用pyinstaller -F main.py在项目根目录运行即可！</p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = ".",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="js/base.js" defer></script>
+        <script src="search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
+
+<!--
+MkDocs version : 1.4.3
+Build Date UTC : 2023-06-24 07:55:17.345934+00:00
+-->
