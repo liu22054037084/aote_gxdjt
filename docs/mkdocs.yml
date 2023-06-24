@@ -11,10 +11,8 @@ repo_url: https://github.com/liu22054037084/QBTorrentCMS.git
 copyright: GPL-3.0 license
 
 theme:
-  名字: material
-
-  编程语言: zh
-
+  name: material
+  language: zh
   highlightjs: true
 
 nav:
