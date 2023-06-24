@@ -76,7 +76,7 @@ class SQLiteDB:
                 tiao_jianl = f'("{tiao_jianl[0]}")'
             query = f"SELECT * FROM {from_table} WHERE {zd_table} IN {tiao_jianl}"
         else:
-            condition = " OR ".join([f"{zd_table} LIKE '%{i.replace('%', '%%').replace('_', '__')}%'" for i in tiao_jianl])
+            condition = ' OR '.join([f'{zd_table} LIKE "%{i}%"' for i in tiao_jianl])
             query = f"SELECT * FROM {from_table} WHERE {condition}"
 
         result = self.fetch(query)
