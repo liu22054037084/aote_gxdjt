@@ -73,10 +73,10 @@ class SQLiteDB:
             if len(tiao_jianl) > 2:
                 tiao_jianl = tuple(tiao_jianl)
             else:
-                tiao_jianl = f"('{tiao_jianl[0]}')"
+                tiao_jianl = f'("{tiao_jianl[0]}")'
             query = f"SELECT * FROM {from_table} WHERE {zd_table} IN {tiao_jianl}"
         else:
-            condition = " OR ".join([f"{zd_table} LIKE '%{i.replace(r' ', '%').replace(r'_', '%').replace(r'[', '%').replace(r']', '%')}%'" for i in tiao_jianl])
+            condition = " OR ".join([f"{zd_table} LIKE '%{i.replace('%', '%%').replace('_', '__')}%'" for i in tiao_jianl])
             query = f"SELECT * FROM {from_table} WHERE {condition}"
 
         result = self.fetch(query)

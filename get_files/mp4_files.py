@@ -11,7 +11,7 @@ def mp4_files(logger, path):
     #           for root, dirs, files in os.walk(path) for file in files if file.endswith(".mp4")]
 
     file_list = []
-    allowed_extensions = [".mp4", ".mkv"]
+    allowed_extensions = [".mp4"]
     for root, dirs, files in os.walk(path):
         for file in files:
             file_path = os.path.join(root, file).replace("\\", "/")

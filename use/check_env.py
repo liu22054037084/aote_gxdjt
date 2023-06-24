@@ -16,50 +16,48 @@ def chech_env_bool():  # main第一次运行函数，用来确认配置文件是
         # 创建 .env 文件
         with open('.env', 'w') as file:
             # 写入内容到 .env 文件
-            file.write("""
-                [log_l]
-                #日志等级(目前拥有ERROR/INFO)              例如:ERROR
-                log_level=error
-                
-                #日志名称                                 例如:error.log
-                log_name=error.log
-                
-                # log保留天数默认为七天
-                LOG_RETENTION_DAYS=7                
-                
-                # log分割防止一个logo文件过大以天为单位默认7
-                LOG_INTERVAL_DAYS=7
+            file.write("""[log_l]
+#日志等级(目前拥有ERROR/INFO)              例如:ERROR
+log_level=error
 
-                [BD]
-                # 需转移的目录                             例如:/store/temp/download
-                files_video=
-                
-                # 这是直链的前分享地址                      例如:https://video.example.com/file
-                video_url=
-                
-                # 目标路径                                 例如/store/void
-                gua_gen=
-                
-                # 选择使用的播放器默认dplayer
-                vod_dplayer=dplayer
-                
-                [MySQLDB]
-                # mysql数据库地址                          例如:https://mysql.example.com/
-                host=
-                
-                # mysql数据库账户                          例如:admin
-                user=
-                
-                # mysql数据库密码                          例如:password
-                password=
-                
-                # mysql数据库名                            例如:my_void
-                database=
-                
-                [SQLiteDB]
-                # 本地数据库地址(缓存,记录状态)               例如:./assets/DS.db
-                db_file=
+#日志名称                                 例如:error.log
+log_name=error.log
 
+# log保留天数默认为七天
+LOG_RETENTION_DAYS=7                
+
+# log分割防止一个logo文件过大以天为单位默认7
+LOG_INTERVAL_DAYS=7
+
+[BD]
+# 需转移的目录                             例如:/store/temp/download
+files_video=
+
+# 这是直链的前分享地址                      例如:https://video.example.com/file
+video_url=
+
+# 目标路径                                 例如/store/void
+gua_gen=
+
+# 选择使用的播放器默认dplayer
+vod_dplayer=dplayer
+
+[MySQLDB]
+# mysql数据库地址                          例如:https://mysql.example.com/
+host=
+
+# mysql数据库账户                          例如:admin
+user=
+
+# mysql数据库密码                          例如:password
+password=
+
+# mysql数据库名                            例如:my_void
+database=
+
+[SQLiteDB]
+# 本地数据库地址(缓存,记录状态)               例如:./assets/DS.db
+db_file=
             """)
 
         # 停止运行

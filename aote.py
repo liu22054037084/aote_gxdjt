@@ -198,10 +198,9 @@ def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1,
                          conditions=[f"vod_name = '{list_b[0][0]}'"])
 
 
-def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, modified_time_Z, c=0, cs=30):  # 这个是运行函数的主体函数
+def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c=0, cs=30):  # 这个是运行函数的主体函数
 
     """
-    :param modified_time_Z: 储存FilesVideo更新时间
     :param logger: 日志的调用函数，不需要在意
     :param DB: 本地数据的调用对象
     :param FilesVideo:需要转移的文件路径
@@ -214,6 +213,8 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, m
     :param cs: 每一次获取数据库对象后循环的次数(防止数据库对象访问失效，当一次数据库对象已经循环cs次数后用于判断跳出此次循环，以达到重新获取数据库对象的过程)
     :return:
     """
+
+    modified_time_Z = ''  # 保存FilesVideo文件的更新时间存储
 
     while True:
 
@@ -301,8 +302,6 @@ def main():  # 运行函数
 
     logger, files_video, video_url, gua_gen, vod_dplayer, mysql_host, mysql_user, mysql_password, mysql_database, sqlite_db_file = check_env.get_env_file()
 
-    modified_time_Z = ''  # 保存FilesVideo文件的更新时间存储
-
     try:
 
         logger.info('程序开始运行')
@@ -319,7 +318,7 @@ def main():  # 运行函数
 
             cs_z += 1
             main_loop(logger=logger, DB=db, FilesVideo=files_video, ReH=re_h, GuaGen=gua_gen, VideoUrl=video_url,
-                      SQL=sql, vod_dplayer=vod_dplayer, modified_time_Z=modified_time_Z)
+                      SQL=sql, vod_dplayer=vod_dplayer)
 
             logger.info(f'完成{cs_z}次完循环处理！')
     finally:
