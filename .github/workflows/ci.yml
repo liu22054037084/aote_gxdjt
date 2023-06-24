@@ -2,10 +2,10 @@ name: Deploy Docs to Github Pages
 on:
   push:
     branches:
-      - master 
+      - master
       - main
     paths:
-      - "./**"
+      - "docs/**"
   workflow_dispatch:
 jobs:
   deploy:

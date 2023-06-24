@@ -4,3 +4,13 @@
 /venv/
 /.env/
 /.vscode/
+get_files/__pycache__/__init__.cpython-310.pyc
+get_files/__pycache__/mp4_files.cpython-310.pyc
+sql_class/__pycache__/__init__.cpython-310.pyc
+sql_class/__pycache__/my_sql.cpython-310.pyc
+sql_class/__pycache__/sql_ite.cpython-310.pyc
+use/__pycache__/check_env.cpython-310.pyc
+use/__pycache__/download_image.cpython-310.pyc
+.env
+.gitignore
+assets/DS.db
