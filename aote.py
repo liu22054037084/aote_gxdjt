@@ -41,13 +41,13 @@ def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):
     if all(value is None for value in [list_b[0][8], list_b[0][9]]):
         vod_en = ''.join(lazy_pinyin(list_b[0][0]))
         vod_letter = vod_en[0].upper()
-        DB.update_rows(f'reserve_table', f"vod_en = {vod_en}, vod_letter = {vod_letter}", list_b[0][0])
+        DB.update_rows(f'reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")
 
     if list_b[0][10] is not None and 'gxdjt.cf' not in list_b[0][10]:
         cg = download_image(list_b[0][10], 'img.jpg', gen_cp)
         if cg == '成功':
             image_url = f"{VideoUrl}{cp_up}img.jpg"
-            DB.update_rows('reserve_table', f"vod_pic = {image_url}",list_b[0][0])
+            DB.update_rows('reserve_table', f"vod_pic = '{image_url}'", f"name = '{list_b[0][0]}'")
             logger.info('图片下载转换成功img.jpg并储存在OneDrive上，然后保存现在的链接，方便后面调用！')
 
     if list_b[0][-2] and ("<p>" not in list_b[0][-2] and "</p>" not in list_b[0][-2]):
