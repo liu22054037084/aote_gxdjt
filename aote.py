@@ -52,7 +52,7 @@ def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):
 
     if list_b[0][-2] and ("<p>" not in list_b[0][-2] and "</p>" not in list_b[0][-2]):
         vod_blurb = '<p>' + list_b[0][-2].replace('\t', '').replace('\n', '').replace(' ', '').replace('。', '。</p><p>').replace('！', '！</p><p>').replace('？', '？</p><p>').replace('<p></p>', '</p>') + '</p>'
-        DB.update_rows('reserve_table', f"vod_blurb = {vod_blurb}",list_b[0][0])
+        DB.update_rows('reserve_table', f"vod_blurb = '{vod_blurb}'", f"name = '{list_b[0][0]}'")
 
 
 def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):
