@@ -12,14 +12,6 @@ from sql_class.my_sql import MySQLDB
 from sql_class.sql_ite import SQLiteDB
 from use import download_image as d_img
 from get_files.mp4_files import mp4_files
-import subprocess
-
-
-def copy_file(source, destination):  # 拷贝命令，优先使用Linux命令，疑似python库拷贝的会导致画面丢失
-    try:
-        subprocess.run(['cp', source, destination], check=True)
-    except subprocess.CalledProcessError:
-        shutil.copy(source, destination)
 
 
 def filter_video(files, files_key, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
@@ -110,23 +102,24 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):  # 
             cp1 = cp1 + '#' + VideoUrl + cp  # 保证两个视频链接直接存在一个#用于区分视频每个链接的独立性
 
         if list_c[i][0] not in ys:
+
             if os.path.exists(gen_fil):
                 if filecmp.cmp(f'{list_c[i][1]}', gen_fil):
-                    logger.info(f'{list_c[i][0]}的文件已存在且相同，跳过')
+                    logger.info(f'{list_c[i][0]}的文件已存在且相同,跳过')
                 else:
                     logger.info(f'{list_c[i][0]}的文件已存在但不同，进行覆盖！')
                     logger.info(f'正在删除未完全转移的文件: {gen_fil}')
                     os.remove(gen_fil)
                     logger.info(f'已删除未完全转移的文件')
 
-                    logger.info(f'正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
-                    copy_file(list_c[i][1], gen_cp)
+                    logger.info(f'正在执行 《 {gen_cp} 》到 《 {list_c[i][1]} 》的视频转移！')
+                    shutil.copy2(f'{list_c[i][1]}', gen_cp)
                     logger.info(f'执行把组装链接写入数据库')
                     DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
                     logger.info(f'组装链接写入完成')
             else:
-                logger.info(f'正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
-                copy_file(list_c[i][1], gen_cp)
+                logger.info(f'正在执行》》 {gen_cp} 到 {list_c[i][1]} 》》的视频转移！')
+                shutil.copy2(f'{list_c[i][1]}', gen_cp)
                 logger.info(f'执行把组装链接写入数据库')
                 DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
                 logger.info(f'组装链接写入完成')
