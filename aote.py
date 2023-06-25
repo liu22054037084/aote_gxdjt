@@ -15,7 +15,7 @@ from get_files.mp4_files import mp4_files
 import subprocess
 
 
-def copy_file(source, destination):
+def copy_file(source, destination):  # 拷贝命令，优先使用Linux命令，疑似python库拷贝的会导致画面丢失
     try:
         subprocess.run(['cp', source, destination], check=True)
     except subprocess.CalledProcessError:
