@@ -80,6 +80,7 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):  # 
     :param DB: 本地数据的调用对象
     :return:
     """
+
     cp1 = ''
 
     for i in range(len(list_c)):

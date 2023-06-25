@@ -57,6 +57,6 @@ def rss(url, proxies={'https': 'http://127.0.0.1:8889'}):
     return rss_dict
 
 
-# q = rss(url="https://mikanani.me/RSS/Bangumi?bangumiId=2970&subgroupid=574")
+# q = rss(url="")
 # for i in q:
 #     print(q[i])
