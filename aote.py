@@ -35,7 +35,7 @@ def filter_video(files, files_key, DB, ReH):  # 这个是处理获取的视频�
 
 def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):
     if not os.path.exists(gen_cp):
-        logger.info(f'路径不存在创建属于《{list_b[0][0]}》路径')
+        logger.info(f'{gen_cp}路径不存在创建属于《{list_b[0][0]}》路径')
         os.makedirs(gen_cp)
 
     if all(value is None for value in [list_b[0][8], list_b[0][9]]):
