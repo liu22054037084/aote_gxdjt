@@ -28,4 +28,4 @@
 
 ### 使用pyinstaller可以进行编译
 
-用pyinstaller -F main.py在项目根目录运行即可！
+###### 用pyinstaller -F main.py在项目根目录运行即可！
