@@ -80,6 +80,7 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):  # 
     :param DB: 本地数据的调用对象
     :return:
     """
+
     cp1 = ''
 
     for i in range(len(list_c)):
@@ -93,30 +94,34 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):  # 
         else:
             ys = list_b[0][5]
 
-        if cp1 == '':
+        if ys == '#':
             cp1 = VideoUrl + cp
+        elif ys == list_b[0][5]:
+            cp1 = ys + '#' + VideoUrl + cp
         else:
             cp1 = cp1 + '#' + VideoUrl + cp  # 保证两个视频链接直接存在一个#用于区分视频每个链接的独立性
 
         if list_c[i][0] not in ys:
 
             if os.path.exists(gen_fil):
-                # 比较源文件和目标文件是否相同
                 if filecmp.cmp(f'{list_c[i][1]}', gen_fil):
                     logger.info(f'{list_c[i][0]}的文件已存在且相同,跳过')
                 else:
-                    logger.info(f'{list_c[i][0]}的文件已存在且且不同进行覆盖！')
-                    logger.info(f'f"正在执行 《 {gen_cp} 》到 《 {list_c[i][1]} 》的视频转移！')
+                    logger.info(f'{list_c[i][0]}的文件已存在但不同，进行覆盖！')
+                    logger.info(f'正在删除未完全转移的文件: {gen_fil}')
+                    os.remove(gen_fil)
+                    logger.info(f'已删除未完全转移的文件')
+
+                    logger.info(f'正在执行 《 {gen_cp} 》到 《 {list_c[i][1]} 》的视频转移！')
                     shutil.copy2(f'{list_c[i][1]}', gen_cp)
                     logger.info(f'执行把组装链接写入数据库')
                     DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
                     logger.info(f'组装链接写入完成')
             else:
-                logger.info(f'f"正在执行》》 {gen_cp} 到 {list_c[i][1]} 》》的视频转移！')
+                logger.info(f'正在执行》》 {gen_cp} 到 {list_c[i][1]} 》》的视频转移！')
                 shutil.copy2(f'{list_c[i][1]}', gen_cp)
                 logger.info(f'执行把组装链接写入数据库')
-                DB.update_rows('reserve_table', f"url_video_path = '{cp1}'",
-                               f"name = '{list_b[0][0]}'")  # 每拷贝一次，就把组成的链接进行写入数据库
+                DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
                 logger.info(f'组装链接写入完成')
         else:
             logger.info(f'{list_c[i][0]}的视频已经存在链接当中')
