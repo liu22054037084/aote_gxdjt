@@ -1,4 +1,4 @@
-# QBTorrentCMS
+# QBTorrentCMS 主页
 
 ### 这是一个半自动的qb（qbittorrent）接管推送bt下载并对cms10更新脚本
 
