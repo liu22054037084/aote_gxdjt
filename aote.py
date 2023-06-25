@@ -6,20 +6,12 @@ import random
 import os.path
 import filecmp
 import datetime
-import subprocess
 from use import check_env
 from pypinyin import lazy_pinyin
 from sql_class.my_sql import MySQLDB
 from sql_class.sql_ite import SQLiteDB
 from use import download_image
 from get_files.mp4_files import mp4_files
-
-
-def copy_file(source, destination):  # 拷贝命令，优先使用Linux命令，疑似python库拷贝的会导致画面丢失
-    try:
-        subprocess.run(['cp', source, destination], check=True)
-    except subprocess.CalledProcessError:
-        shutil.copy(source, destination)
 
 
 def filter_video(files, files_key, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
@@ -101,12 +93,12 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):
                     os.remove(gen_fil)
                     logger.info(f'已删除未完全转移的文件')
                     logger.info(f'正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
-                    copy_file(list_c[i][1], gen_cp)
+                    shutil.copy(list_c[i][1], gen_cp)
                     logger.info(f'执行把组装链接写入数据库')
                     logger.info(f'组装链接写入完成')
             else:
                 logger.info(f'正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
-                copy_file(list_c[i][1], gen_cp)
+                shutil.copy(list_c[i][1], gen_cp)
         else:
             logger.info(f'{list_c[i][0]}的视频已经存在链接当中')
 
