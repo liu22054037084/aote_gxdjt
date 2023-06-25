@@ -12,6 +12,14 @@ from sql_class.my_sql import MySQLDB
 from sql_class.sql_ite import SQLiteDB
 from use import download_image as d_img
 from get_files.mp4_files import mp4_files
+import subprocess
+
+
+def copy_file(source, destination):  # 拷贝命令，优先使用Linux命令，疑似python库拷贝的会导致画面丢失
+    try:
+        subprocess.run(['cp', source, destination], check=True)
+    except subprocess.CalledProcessError:
+        shutil.copy(source, destination)
 
 
 def filter_video(files, files_key, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
@@ -28,7 +36,7 @@ def filter_video(files, files_key, DB, ReH):  # 这个是处理获取的视频�
 
     files_key = [ReH.sub('', item) for item in files_key]
 
-    my_list = [key for key in list(set(files_key)) if key is not None and key.strip() != '']
+    my_list = [密钥 for 密钥 in list(set(files_key)) if 密钥 is 不 无 和 key.strip() != '']
 
     return my_list
 
@@ -43,18 +51,18 @@ def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):  # 对影
     :param cp_up: 以服务器挂在的网盘为根目录，然后到达各个资源分类的路径
     :return:
     """
-    if not os.path.exists(gen_cp):  # 检查源文件是否存在
+    if 不 os.path。exists(gen_cp):  # 检查源文件是否存在
         logger.info(f'路径不存在创建属于《{list_b[0][0]}》路径')
         os.makedirs(gen_cp)
 
-    if (list_b[0][8] or list_b[0][9]) is None:
-        vod_en = ''.join(lazy_pinyin(list_b[0][0]))  # 汉字转拼音
-        vod_letter = vod_en[0].upper()  # 获取拼音大写
+    if (list_b[0][8]  或者 list_b[0][9]) is 无:
+        vod_en = ''。join(lazy_pinyin(list_b[0][0]))  # 汉字转拼音
+        vod_letter = vod_en[0]。upper()  # 获取拼音大写
         DB.update_rows('reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'",
                        f"name = '{list_b[0][0]}'")  # 写入数据库
 
-    if list_b[0][10] is not None:
-        if 'gxdjt.cf' not in list_b[0][10]:
+    if list_b[0][10] is 不 无:
+        if 'gxdjt.cf' 不 in list_b[0][10]:
             cg = d_img.download_image(list_b[0][10], 'img.jpg', gen_cp)  # 下载图片，进行储蓄
             if cg == '成功':
                 DB.update_rows('reserve_table', f"vod_pic = '{VideoUrl}{cp_up}img.jpg'",
@@ -62,10 +70,10 @@ def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):  # 对影
                 logger.info(f'图片下载转换成功img.jpg并储存在OneDrive上，然后保存现在的链接，方便后面调用！')
 
     if list_b[0][-2]:
-        if not ("<p>" in list_b[0][-2] or "</p>" in list_b[0][-2]):
-            vod_blurb = '<p>' + list_b[0][-2].replace('\t', '').replace('\n', '').replace(' ', '').replace('。',
-                                                                                                           '。</p><p>').replace(
-                '！', '！</p><p>').replace('？', '？</p><p>').replace('<p></p>', '</p>') + '</p>'  # 对简介进行html加p标签的处理
+        if 不 ("<p>" in list_b[0][-2]  或者 "</p>" in list_b[0][-2]):
+            vod_blurb = '<p>' + list_b[0][-2]。replace('\t', '')。replace('\n', '')。replace(' ', '')。replace('。',
+                                                                                                           '。</p><p>')。replace(
+                '！', '！</p><p>')。replace('？', '？</p><p>')。replace('<p></p>', '</p>') + '</p>'  # 对简介进行html加p标签的处理
             DB.update_rows('reserve_table', f"vod_blurb = '{vod_blurb}' ", f"name = '{list_b[0][0]}'")  # 写入数据库
 
 
@@ -89,7 +97,7 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):  # 
 
         gen_fil = f'{gen_cp}{list_c[i][0]}'
 
-        if list_b[0][5] is None:
+        if list_b[0][5] is 无:
             ys = '#'
         else:
             ys = list_b[0][5]
@@ -101,25 +109,24 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):  # 
         else:
             cp1 = cp1 + '#' + VideoUrl + cp  # 保证两个视频链接直接存在一个#用于区分视频每个链接的独立性
 
-        if list_c[i][0] not in ys:
-
-            if os.path.exists(gen_fil):
+        if list_c[i][0] 不 in ys:
+            if os.path。exists(gen_fil):
                 if filecmp.cmp(f'{list_c[i][1]}', gen_fil):
-                    logger.info(f'{list_c[i][0]}的文件已存在且相同,跳过')
+                    logger.info(f'{list_c[i][0]}的文件已存在且相同，跳过')
                 else:
                     logger.info(f'{list_c[i][0]}的文件已存在但不同，进行覆盖！')
                     logger.info(f'正在删除未完全转移的文件: {gen_fil}')
-                    os.remove(gen_fil)
+                    os.移除(gen_fil)
                     logger.info(f'已删除未完全转移的文件')
 
-                    logger.info(f'正在执行 《 {gen_cp} 》到 《 {list_c[i][1]} 》的视频转移！')
-                    shutil.copy2(f'{list_c[i][1]}', gen_cp)
+                    logger.info(f'正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
+                    copy_file(list_c[i][1], gen_cp)
                     logger.info(f'执行把组装链接写入数据库')
                     DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
                     logger.info(f'组装链接写入完成')
             else:
-                logger.info(f'正在执行》》 {gen_cp} 到 {list_c[i][1]} 》》的视频转移！')
-                shutil.copy2(f'{list_c[i][1]}', gen_cp)
+                logger.info(f'正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
+                copy_file(list_c[i][1], gen_cp)
                 logger.info(f'执行把组装链接写入数据库')
                 DB.update_rows('reserve_table', f"url_video_path = '{cp1}'", f"name = '{list_b[0][0]}'")
                 logger.info(f'组装链接写入完成')
@@ -142,7 +149,7 @@ def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1,
     :return:
     """
     qtb = SQL.select_rows(table_name='mac_vod', condition=f"vod_name='{list_b[0][0]}'")
-    if not qtb:
+    if 不 qtb:
         l_b = DB.query_target_table(tiao_jian=key, from_table="reserve_table", zd_table="like_l")
         if l_b[0][3] == 1:
             startq = 1
@@ -233,11 +240,11 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c
 
         logger.info('处理开始执行了！')
 
-        timestamp = os.path.getmtime(FilesVideo)
+        timestamp = os.path。getmtime(FilesVideo)
 
         logger.info(f'开始获取{FilesVideo}更新时间！')
 
-        modified_time_A = datetime.datetime.fromtimestamp(timestamp)  # 获取FilesVideo更新日期
+        modified_time_A = datetime.datetime。fromtimestamp(timestamp)  # 获取FilesVideo更新日期
 
         logger.info(f'获取{FilesVideo}更新时间成功，进行与所储存的上一次获取的更新日期进行比对！')
 
@@ -259,21 +266,21 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c
 
             DB.drop_table('relay_table')
 
-            continue
+            继续
 
         my_list = filter_video(files=files, files_key=files_key, DB=DB, ReH=ReH)
 
-        for key in my_list:
+        for 密钥 in my_list:
 
             list_b = DB.query_target_table(tiao_jian=key, from_table="reserve_table", zd_table="like_l")
 
-            if list_b is not None:
+            if list_b is 不 无:
 
                 list_c = DB.query_target_table(tiao_jian=key, from_table="relay_table", zd_table="key", like_l=True)
 
-                cp_up = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0].strip()}/"
+                cp_up = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]。strip()}/"
 
-                gen_cp = f"{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0].strip()}/"
+                gen_cp = f"{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0]。strip()}/"
 
                 information_handling(gen_cp=gen_cp, logger=logger, list_b=list_b, DB=DB, VideoUrl=VideoUrl, cp_up=cp_up)
 
