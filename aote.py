@@ -93,12 +93,12 @@ def url_handling_write(list_c, cp_up, gen_cp, list_b, VideoUrl, logger, DB):
                     os.remove(gen_fil)
                     logger.info(f'已删除未完全转移的文件')
                     logger.info(f'正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
-                    shutil.copy2(list_c[i][1], gen_cp)
+                    shutil.copy2(gen_cp, list_c[i][1])
                     logger.info(f'执行把组装链接写入数据库')
                     logger.info(f'组装链接写入完成')
             else:
                 logger.info(f'正在执行》》 {list_c[i][1]} 到 {gen_cp} 》》的视频转移！')
-                shutil.copy2(list_c[i][1], gen_cp)
+                shutil.copy2(gen_cp, list_c[i][1])
                 logger.info(f'{list_c[i][0]}转移完成！')
         else:
             logger.info(f'{list_c[i][0]}的视频已经存在链接当中')
