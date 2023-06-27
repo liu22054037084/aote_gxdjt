@@ -191,7 +191,7 @@ def process_list(logger, DB, my_list, GuaGen, VideoUrl, SQL, vod_dplayer):
             list_c = DB.query_target_table(tiao_jian=key, from_table="relay_table", zd_table="key", like_l=True)
 
             cp_up = f"{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0].strip()}/"
-            gen_cp = f"{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][7].strip()}/"
+            gen_cp = f"{GuaGen}/{list_b[0][2]}/{list_b[0][3]}/{list_b[0][0].strip()}/"
 
             information_handling(gen_cp=gen_cp, logger=logger, list_b=list_b, DB=DB, VideoUrl=VideoUrl, cp_up=cp_up)
 
