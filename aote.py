@@ -10,7 +10,7 @@ from use import check_env
 from pypinyin import lazy_pinyin
 from sql_class.my_sql import MySQLDB
 from sql_class.sql_ite import SQLiteDB
-from use import download_image
+from use.download_image import download_image
 from get_files.mp4_files import mp4_files
 
 
