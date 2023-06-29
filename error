@@ -1,0 +1,48 @@
+2023-06-29 23:54:37,445 - my_logger - ERROR - 数据库连接错误或程序遭到强制退出!
+Traceback (most recent call last):
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\network.py", line 509, in open_connection
+    self.sock.connect(sockaddr)
+ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\aote.py", line 246, in main
+    sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\sql_class\my_sql.py", line 9, in __init__
+    self.conn = mysql.connector.connect(
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\__init__.py", line 179, in connect
+    return MySQLConnection(*args, **kwargs)
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\connection.py", line 95, in __init__
+    self.connect(**kwargs)
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\abstracts.py", line 716, in connect
+    self._open_connection()
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\connection.py", line 206, in _open_connection
+    self._socket.open_connection()
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\network.py", line 511, in open_connection
+    raise errors.InterfaceError(
+mysql.connector.errors.InterfaceError: 2003: Can't connect to MySQL server on ':3306' (10061 由于目标计算机积极拒绝，无法连接。)
+2023-06-29 23:55:24,794 - my_logger - ERROR - 数据库连接错误或程序遭到强制退出!
+Traceback (most recent call last):
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\network.py", line 509, in open_connection
+    self.sock.connect(sockaddr)
+ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\aote.py", line 246, in main
+    sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\sql_class\my_sql.py", line 9, in __init__
+    self.conn = mysql.connector.connect(
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\__init__.py", line 179, in connect
+    return MySQLConnection(*args, **kwargs)
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\connection.py", line 95, in __init__
+    self.connect(**kwargs)
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\abstracts.py", line 716, in connect
+    self._open_connection()
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\connection.py", line 206, in _open_connection
+    self._socket.open_connection()
+  File "C:\Users\azxt\Desktop\QBTorrentCMS\venv\lib\site-packages\mysql\connector\network.py", line 511, in open_connection
+    raise errors.InterfaceError(
+mysql.connector.errors.InterfaceError: 2003: Can't connect to MySQL server on ':3306' (10061 由于目标计算机积极拒绝，无法连接。)

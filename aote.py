@@ -260,7 +260,7 @@ def main():
             # 在异常退出后，十秒内没有输入则自动重启
             restart = True
             for i in range(10, 0, -1):
-                print(f"程序将在{i}秒后重启...\n输入'y'阻止重启程序！")
+                logger.exception(f"程序将在{i}秒后重启...\n\n输入'y'阻止重启程序！")
                 time.sleep(1)
 
                 # 检查是否有输入
@@ -268,7 +268,6 @@ def main():
                     user_input = sys.stdin.readline().strip().lower()
                     if user_input == 'y':
                         restart = False
-                    break
 
             if restart:
                 break
