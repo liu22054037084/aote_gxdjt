@@ -1,19 +1,19 @@
-import re
-import os
-import sys
-import time
-import select
-import shutil
-import random
-import os.path
-import filecmp
 import datetime
-from use import check_env
+import filecmp
+import os
+import os.path
+import random
+import re
+import shutil
+import time
+
 from pypinyin import lazy_pinyin
+
+from get_files.mp4_files import mp4_files
 from sql_class.my_sql import MySQLDB
 from sql_class.sql_ite import SQLiteDB
+from use import check_env
 from use.download_image import download_image
-from get_files.mp4_files import mp4_files
 
 
 def filter_video(files, files_key, DB, ReH):  # 这个是处理获取的视频地址与名称，并且把名称用集合进行去重
@@ -258,16 +258,6 @@ def main():
             db.drop_table('relay_table')
 
             # 在异常退出后，十秒内没有输入则自动重启
-            restart = True
             for i in range(10, 0, -1):
-                logger.exception(f"程序将在{i}秒后重启...\n\n输入'y'阻止重启程序！")
+                logger.exception(f"程序将在{i}秒后重启...\n\n请退出两次！")
                 time.sleep(1)
-
-                # 检查是否有输入
-                if select.select([sys.stdin], [], [], 0)[0]:
-                    user_input = sys.stdin.readline().strip().lower()
-                    if user_input == 'y':
-                        restart = False
-
-            if restart:
-                break
