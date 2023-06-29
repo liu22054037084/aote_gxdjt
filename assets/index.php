@@ -17,167 +17,185 @@
 			width: 1%;
 			white-space: nowrap;
 		}
+		.btn-pink {
+		  color: #fff;
+		  background-color: #ff69b4;
+		  border-color: #ff69b4;
+		}
+		
+		.btn-pink:hover {
+		  color: #fff;
+		  background-color: #ff1493;
+		  border-color: #ff1493;
+		}
+
 	</style>
 </head>
 <body>
 
 <?php
 
+// 连接到SQLite3数据库
+try {
+    $database = new SQLite3('/uup/admin/DS.db');
+} catch (Exception $e) {
+    die("无法连接数据库：" . $e->getMessage());
+}
 
-// type_id(类型的id)
-// vod_sub(影视别名)
-// vod_pic(图)
-// vod_time_add(添加时间戳)
-// vod_blurb(简介)
+// 处理表单提交
+if (isset($_POST['name']) && isset($_POST['like_l']) && isset($_POST['year']) && isset($_POST['quarter']) && isset($_POST['vod_state']) && isset($_POST['type_id']) && isset($_POST['vod_sub']) && isset($_POST['vod_pic']) && isset($_POST['vod_blurb'])) {
+    $name = $_POST['name'];
+    $like_l = $_POST['like_l'];
+    $pattern = '/(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*/';
+    $like_l = preg_replace($pattern, '', $like_l);
+    $year = $_POST['year'];
+    $quarter = $_POST['quarter'];
+    $vod_state = $_POST['vod_state'];
+    $type_id = $_POST['type_id'];
+    $vod_sub = $_POST['vod_sub'];
+    $vod_pic = $_POST['vod_pic'];
+    $vod_time_add = time(); //获取时间戳
+    $vod_blurb = $_POST['vod_blurb'];
 
+    $params = array(
+        ':name' => $name,
+        ':like_l' => $like_l,
+        ':year' => $year,
+        ':quarter' => $quarter,
+        ':vod_state' => $vod_state,
+        ':type_id' => $type_id,
+        ':vod_sub' => $vod_sub,
+        ':vod_pic' => $vod_pic,
+        ':vod_time_add' => $vod_time_add,
+        ':vod_blurb' => $vod_blurb
+    );
 
-    // 连接到SQLite3数据库
-    try {
-        $database = new SQLite3('./DS.db');
-    } catch (Exception $e) {
-        die("无法连接数据库：" . $e->getMessage());
+    $sql = "INSERT OR REPLACE INTO reserve_table (name, like_l, year, quarter, vod_state, type_id, vod_sub, vod_pic, vod_time_add, vod_blurb) 
+            VALUES (:name, :like_l, :year, :quarter, :vod_state, :type_id, :vod_sub, :vod_pic, :vod_time_add, :vod_blurb)";
+
+    // 使用预处理语句
+    executeStatement($database, $sql, $params);
+}
+
+function executeStatement($database, $sql, $params)
+{
+    $stmt = $database->prepare($sql);
+    foreach ($params as $param => &$value) {
+        $stmt->bindParam($param, $value);
     }
-    
-    // 处理表单提交
-    if (isset($_POST['name'])) {
-    	$name = $_POST['name'];
-    	$like_l = $_POST['like_l'];
-		$pattern = '/(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*/';
-		$like_l = preg_replace($pattern, '', $like_l);
-    	$year = $_POST['year'];
-    	$quarter = $_POST['quarter'];
-		$vod_state = $_POST['vod_state'];
-    	$type_id = $_POST['type_id'];
-    	$vod_sub = $_POST['vod_sub'];
-    	$vod_pic = $_POST['vod_pic'];
-		$vod_time_add = time(); //获取时间戳
-    	$vod_blurb = $_POST['vod_blurb'];
-		
-    
-    	// 使用预处理语句
-    	$stmt = $database->prepare("INSERT OR REPLACE INTO reserve_table (name, like_l, year, quarter, vod_state, type_id, vod_sub, vod_pic, vod_time_add, vod_blurb) VALUES (:name, :like_l, :year, :quarter, :vod_state, :type_id, :vod_sub, :vod_pic, :vod_time_add, :vod_blurb)");
-    		$stmt->bindParam(':name', $name);
-    		$stmt->bindParam(':like_l', $like_l);
-    		$stmt->bindParam(':year', $year);
-    		$stmt->bindParam(':quarter', $quarter);
-			$stmt->bindParam(':vod_state', $vod_state);
-    		$stmt->bindParam(':type_id', $type_id); // type_id(类型的id)
-    		$stmt->bindParam(':vod_sub', $vod_sub); // vod_sub(影视别名)
-    		$stmt->bindParam(':vod_pic', $vod_pic); // vod_pic(图)
-    		$stmt->bindParam(':vod_time_add', $vod_time_add); // vod_time_add(添加时间戳)
-    		$stmt->bindParam(':vod_blurb', $vod_blurb); // vod_blurb(简介)
-    		$stmt->execute();
-    	}
+    $stmt->execute();
+}
 ?>
-
-
 <div class="container">
-	<h1 style="text-align: center;">动漫数据库信息录入</h1>
-	<form method="POST">
-	    <div class="form-group">
-	        <label for="name">动漫名称:</label>
-			<div style="display: flex; flex-direction: row; align-items: center;">
-	        <input type="text" class="form-control" id="name" name="name" placeholder="请输入动漫名称" required style="flex-grow: 1;">
-	        <button type="button" id="wikiBtn" class="btn btn-primary" style="margin-left: 10px;background-color: #ffcf00;border-color: #ffe200;">维基搜索</button>
-			</div>
-	    </div>
-		<div class="form-group">
-		    <label for="vod_sub">动漫别名:</label>
-		    <input type="text" class="form-control" id="vod_sub" name="vod_sub" placeholder="注意别名为条件字段需要根据rss下载名称为条件！" required>
-		    <small class="form-text text-muted">例如: 动漫的英文或者罗马文</small>
-		</div>
-	    <script>
-	        document.getElementById("wikiBtn").addEventListener("click", function() {
-	            var animeName = document.getElementById("name").value;
-	            var wikiUrl = "https://wiki.gxdjt.cf/w/index.php?search=" + encodeURI(animeName);
-	            window.open(wikiUrl, "_blank");
-	        });
-	    </script>
-	    <div class="form-group">
-	        <label for="like_l">模糊查询:</label>
-	        <input type="text" class="form-control" id="like_l" name="like_l" placeholder="请输入查询关键字" required>
-	        <small class="form-text text-muted">例如: 疾风</small>
-	    </div>
-		<div class="form-group">
-		    <label for="vod_state">视频类型:</label>
-		    <select class="form-control" id="vod_state" name="vod_state" required>
-		        <option value="TV">TV</option>
-		        <option value="OVA">OVA</option>
-		        <option value="剧场版">剧场版</option>
-		        <option value="抢先版">抢先版</option>
-		    </select>
-		    <small class="form-text text-muted">例如: 一月番剧</small>
-		</div>
-	    <div class="form-group">
-	        <label for="year">发行年份:</label>
-	        <select class="form-control" id="year" name="year" required>
-	            <option value="">请选择年份</option>
-	            <?php
-	            $currentYear = date('Y');
-	            for ($year = $currentYear; $year >= 1950; $year--) {
-	                echo "<option value='$year'>$year</option>";
-	            }
-	            ?>
-	        </select>
-	        <small class="form-text text-muted">例如: 2002</small>
-	    </div>
-	    <div class="form-group">
-	        <label for="quarter">发行月份:</label>
-	        <select class="form-control" id="quarter" name="quarter" required>
-	            <option value="1">一月番剧</option>
-	            <option value="4">四月番剧</option>
-	            <option value="7">七月番剧</option>
-	            <option value="10">十月番剧</option>
-	        </select>
-	        <small class="form-text text-muted">例如: 一月番剧</small>
-	    </div>
-	    <div class="form-group">
-	        <label for="type_id">视频分类:</label>
-	        <select class="form-control" id="type_id" name="type_id" required>
-	            <optgroup label="非新番">
-	                <option value="1">国漫</option>
-	                <option value="2">日韩</option>
-	                <option value="3">欧美</option>
-	            </optgroup>
-	            <optgroup label="新番">
-	                <option value="4">国漫</option>
-	                <option value="5">日韩</option>
-	                <option value="6">欧美</option>
-	            </optgroup>
-	        </select>
-	        <small class="form-text text-muted">例如: 新番</small>
-	    </div>
-		<div class="form-group">
-		    <label for="vod_pic">宣传图片链接:</label>
-		    <input type="url" class="form-control" id="vod_pic" name="vod_pic" placeholder="为宣传图片链接，可以去维基百科寻得" required>
-		    <small class="form-text text-muted">例如:某图片链接 </small>
-		</div>
-		<script>
-		    var inputElement = document.getElementById("vod_pic");
-		    inputElement.addEventListener("change", function() {
-		        var inputValue = inputElement.value;
-		        if (inputValue.startsWith("https://upload.wikimedia.org")) {
-		            inputValue = inputValue.replace("upload.wikimedia.org", "upload.gxdjt.cf");
-		            inputElement.value = inputValue;
-		        }
-		    });
-		</script>
-		<div class="form-group">
-		    <label for="vod_blurb">动漫简介介绍:</label>
-		    <input type="text" class="form-control" id="vod_blurb" name="vod_blurb" placeholder="动漫简介介绍，可以去维基百科寻得" required>
-		    <small class="form-text text-muted">例如:xxxx,xxxx…… </small>
-		</div>
-	    <button type="submit" class="btn btn-primary">添加数据</button>
-	    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">删除数据</button>
-	    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#searchModal">搜索数据</button>
-	</form>
-
+    <h1 style="text-align: center;">动漫数据库信息录入</h1>
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">动漫名称:</label>
+            <div style="display: flex; flex-direction: row; align-items: center;">
+                <input type="text" class="form-control" id="name" name="name" placeholder="请输入动漫名称" style="flex-grow: 1;" required>
+                <button type="button" id="wikiBtn" class="btn btn-primary" style="margin-left: 10px;background-color: #ffcf00;border-color: #ffe200;">维基搜索</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="vod_sub">动漫别名:</label>
+            <input type="text" class="form-control" id="vod_sub" name="vod_sub" placeholder="注意别名为条件字段需要根据bt下载名称为条件！" required>
+            <small class="form-text text-muted">例如: 动漫的英文或者罗马文</small>
+        </div>
+        <script>
+            document.getElementById("wikiBtn").addEventListener("click", function() {
+                var animeName = document.getElementById("name").value;
+                var wikiUrl = "https://wiki.gxdjt.cf/w/index.php?search=" + encodeURI(animeName);
+                window.open(wikiUrl, "_blank");
+            });
+        </script>
+        <div class="form-group">
+            <label for="like_l">模糊查询:</label>
+            <input type="text" class="form-control" id="like_l" name="like_l" placeholder="请输入查询关键字" required>
+            <small class="form-text text-muted">例如: 疾风</small>
+        </div>
+        <div class="form-group">
+            <label for="vod_state">视频类型:</label>
+            <select class="form-control" id="vod_state" name="vod_state" required>
+				<option>请选择类型</option>
+                <option value="TV">TV</option>
+                <option value="OVA">OVA</option>
+                <option value="剧场版">剧场版</option>
+                <option value="抢先版">抢先版</option>
+            </select>
+            <small class="form-text text-muted">例如: 一月番剧</small>
+        </div>
+        <div class="form-group">
+            <label for="year">发行年份:</label>
+            <select class="form-control" id="year" name="year" required>
+                <option>请选择年份</option>
+                <?php
+                $currentYear = date('Y');
+                for ($year = $currentYear; $year >= 1950; $year--) {
+                    echo "<option value='$year'>$year</option>";
+                }
+                ?>
+            </select>
+            <small class="form-text text-muted">例如: 2002</small>
+        </div>
+        <div class="form-group">
+            <label for="quarter">发行月份:</label>
+            <select class="form-control" id="quarter" name="quarter" required>
+				<option>请选择发行月份</option>
+                <option value="1">一月番剧</option>
+                <option value="4">四月番剧</option>
+                <option value="7">七月番剧</option>
+                <option value="10">十月番剧</option>
+            </select>
+            <small class="form-text text-muted">例如: 一月番剧</small>
+        </div>
+        <div class="form-group">
+            <label for="type_id">视频分类:</label>
+            <select class="form-control" id="type_id" name="type_id" required>
+				<option>请选择分类</option>
+                <optgroup label="非新番">
+                    <option value="1">国漫</option>
+                    <option value="2">日韩</option>
+                    <option value="3">欧美</option>
+                </optgroup>
+                <optgroup label="新番">
+                    <option value="4">国漫</option>
+                    <option value="5">日韩</option>
+                    <option value="6">欧美</option>
+                </optgroup>
+            </select>
+            <small class="form-text text-muted">例如: 新番</small>
+        </div>
+        <div class="form-group">
+            <label for="vod_pic">宣传图片链接:</label>
+            <input type="url" class="form-control" id="vod_pic" name="vod_pic" placeholder="为宣传图片链接，可以去维基百科寻得" required>
+            <small class="form-text text-muted">例如:某图片链接 </small>
+        </div>
+        <script>
+            var inputElement = document.getElementById("vod_pic");
+            inputElement.addEventListener("change", function() {
+                var inputValue = inputElement.value;
+                if (inputValue.startsWith("https://upload.wikimedia.org")) {
+                    inputValue = inputValue.replace("upload.wikimedia.org", "upload.gxdjt.cf");
+                    inputElement.value = inputValue;
+                }
+            });
+        </script>
+        <div class="form-group">
+            <label for="vod_blurb">动漫简介介绍:</label>
+            <input type="text" class="form-control" id="vod_blurb" name="vod_blurb" placeholder="动漫简介介绍，可以去维基百科寻得" required>
+            <small class="form-text text-muted">例如:xxxx,xxxx…… </small>
+        </div>
+        <button type="submit" class="btn btn-primary">添加数据</button>
+        <button type="button" class="btn btn-pink" data-toggle="modal" data-target="#xiugaishuju">修改数据</button>
+        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">删除数据</button>
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#searchModal">搜索数据</button>
+    </form>
 	<hr>
 
 	<!-- 显示数据表格 -->
 	<?php
         // 设置每页记录数和默认页码
-        $records_per_page = 10;
+        $records_per_page = 5;
         $page_number = isset($_GET['page']) ? $_GET['page'] : 1;
         
         if (isset($_POST['name_q'])) {
@@ -213,15 +231,15 @@
               echo "<thead>";
               echo "<tr>";
               echo "<th class='resizeable'>动漫名称</th>"; //name
+			  echo "<th class='resizeable'>模糊字段</th>"; //like_l
+			  echo "<th class='resizeable'>宣传图片</th>"; //vod_pic
+			  echo "<th class='resizeable'>发行年份</th>"; //year
+			  echo "<th class='resizeable'>发行季度</th>"; //quarter
 			  echo "<th class='resizeable'>动漫别名</th>"; //vod_sub
 			  echo "<th class='resizeable'>动漫拼音</th>"; //vod_en
 			  echo "<th class='resizeable'>动漫首字</th>"; //vod_letter
 			  echo "<th class='resizeable'>视频类型</th>"; //vod_state
-              echo "<th class='resizeable'>模糊字段</th>"; //like_l
-              echo "<th class='resizeable'>发行年份</th>"; //year
-			  echo "<th class='resizeable'>发行季度</th>"; //quarter
               echo "<th class='resizeable'>类型地区</th>"; //type_id
-			  echo "<th class='resizeable'>宣传图片</th>"; //vod_pic
               echo "<th class='resizeable'>现时间戳</th>"; //vod_time_add
               echo "<th class='resizeable'>动漫简介</th>"; //vod_blurb
               echo "</tr>";
@@ -231,15 +249,15 @@
         
             echo "<tr>";
             echo "<td class='resizeable'>".$row['name']."</td>";
-            echo "<td class='resizeable'>".$row['vod_sub']."</td>";
+            echo "<td class='resizeable'>".$row['like_l']."</td>";
+			echo "<td class='resizeable'><img src='".$row['vod_pic']."' style='width:100%;' /></td>";
+			echo "<td class='resizeable'>".$row['year']."</td>";
+			echo "<td class='resizeable'>".$row['quarter']."</td>";
+			echo "<td class='resizeable'>".$row['vod_sub']."</td>";
 			echo "<td class='resizeable'>".$row['vod_en']."</td>";
 			echo "<td class='resizeable'>".$row['vod_letter']."</td>";
 			echo "<td class='resizeable'>".$row['vod_state']."</td>";
-            echo "<td class='resizeable'>".$row['like_l']."</td>";
-            echo "<td class='resizeable'>".$row['year']."</td>";
-            echo "<td class='resizeable'>".$row['quarter']."</td>";
             echo "<td class='resizeable'>".$row['type_id']."</td>";
-			echo "<td class='resizeable'><img src='".$row['vod_pic']."' style='width:100%;' /></td>";
             echo "<td class='resizeable'>".$row['vod_time_add']."</td>";
             echo "<td class='resizeable'>".$row['vod_blurb']."</td>";
             echo "</tr>";
@@ -273,7 +291,7 @@
     <?php
         // 获取当前页码
         $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-        $limit = 10; // 每页显示的记录数
+        $limit = 5; // 每页显示的记录数
         $offset = ($page - 1) * $limit;
     
         // 查询表格中的所有数据
@@ -285,15 +303,15 @@
             <thead>
                 <tr>
                   <th class="resizeable">动漫名称</th>
-                  <th class="resizeable">动漫别名</th>
+                  <th class="resizeable">模糊字段</th>
+				  <th class="resizeable">宣传图片</th>
+				  <th class="resizeable">发行年份</th>
+				  <th class="resizeable">发行季度</th>
+				  <th class="resizeable">动漫别名</th>
 				  <th class="resizeable">动漫拼音</th>
 				  <th class="resizeable">动漫首字</th>
 				  <th class="resizeable">视频类型</th>
-                  <th class="resizeable">模糊字段</th>
-                  <th class="resizeable">发行年份</th>
-                  <th class="resizeable">发行季度</th>
                   <th class="resizeable">类型地区</th>
-				  <th class="resizeable">宣传图片</th>
                   <th class="resizeable">现时间戳</th>
                   <th class="resizeable">动漫简介</th>
                 </tr>
@@ -302,15 +320,15 @@
                 <?php while ($row = $result->fetchArray(SQLITE3_ASSOC)) { ?>
                 <tr>
                     <td class="resizeable"><?php echo $row['name']; ?></td>
-                    <td class="resizeable"><?php echo $row['vod_sub']; ?></td>
+					<td class="resizeable"><?php echo $row['like_l']; ?></td>
+					<td class="resizable"><img src="<?php echo $row['vod_pic']; ?>" style="width:100%;" /></td>
+					<td class="resizeable"><?php echo $row['year']; ?></td>
+					<td class="resizeable"><?php echo $row['quarter']; ?></td>
+					<td class="resizeable"><?php echo $row['vod_sub']; ?></td>
 					<td class="resizeable"><?php echo $row['vod_en']; ?></td>
 					<td class="resizeable"><?php echo $row['vod_letter']; ?></td>
 					<td class="resizeable"><?php echo $row['vod_state']; ?></td>
-                    <td class="resizeable"><?php echo $row['like_l']; ?></td>
-                    <td class="resizeable"><?php echo $row['year']; ?></td>
-                    <td class="resizeable"><?php echo $row['quarter']; ?></td>
                     <td class="resizeable"><?php echo $row['type_id']; ?></td>
-					<td class="resizable"><img src="<?php echo $row['vod_pic']; ?>" style="width:100%;" /></td>
                     <td class="resizeable"><?php echo $row['vod_time_add']; ?></td>
                     <td class="resizeable"><?php echo $row['vod_blurb']; ?></td>
                 </tr>
@@ -335,6 +353,104 @@
             <?php } ?>
         </ul>
     </nav>
+	
+	<!-- 修改数据的模态框 -->
+	<div class="modal fade" id="xiugaishuju" tabindex="-1" role="dialog" aria-labelledby="xiugaishujuLabel" aria-hidden="true">
+	    <div class="modal-dialog" role="document">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="xiugaishujuLabel">修改数据</h5>
+	                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	                    <span aria-hidden="true">&times;</span>
+	                </button>
+	            </div>
+	            <div class="modal-body">
+	                <form method="POST">
+	                    <div class="form-group">
+	                        <label for="name_x">动漫名称:</label>
+	                        <input type="text" class="form-control" id="name_x" name="name_x" placeholder="修改的动漫名称" required>
+	                    </div>
+						<div class="form-group">
+						    <label for="vod_sub_x">动漫别名:</label>
+						    <input type="text" class="form-control" id="vod_sub_x" name="vod_sub_x">
+						</div>
+						<div class="form-group">
+						    <label for="like_l_x">模糊查询:</label>
+						    <input type="text" class="form-control" id="like_l_x" name="like_l_x">
+						</div>
+						<div class="form-group">
+						    <label for="vod_state_x">视频类型:</label>
+						    <select class="form-control" id="vod_state_x" name="vod_state_x">
+								<option value="">请选择类型</option>
+						        <option value="TV">TV</option>
+						        <option value="OVA">OVA</option>
+						        <option value="剧场版">剧场版</option>
+						        <option value="抢先版">抢先版</option>
+						    </select>
+						</div>
+						<div class="form-group">
+						    <label for="year_x">发行年份:</label>
+						    <select class="form-control" id="year_x" name="year_x">
+						        <option value="">请选择年份</option>
+						        <?php
+						        $currentYear = date('Y');
+						        for ($year = $currentYear; $year >= 1950; $year--) {
+						            echo "<option value='$year'>$year</option>";
+						        }
+						        ?>
+						    </select>
+						</div>
+						<div class="form-group">
+						    <label for="quarter_x">发行月份:</label>
+						    <select class="form-control" id="quarter_x" name="quarter_x">
+								<option value="">请选择发行月份</option>
+						        <option value="1">一月番剧</option>
+						        <option value="4">四月番剧</option>
+						        <option value="7">七月番剧</option>
+						        <option value="10">十月番剧</option>
+						    </select>
+						</div>
+						<div class="form-group">
+						    <label for="type_id_x">视频分类:</label>
+						    <select class="form-control" id="type_id_x" name="type_id_x">
+								<option>请选择分类</option>
+						        <optgroup label="非新番">
+						            <option value="1">国漫</option>
+						            <option value="2">日韩</option>
+						            <option value="3">欧美</option>
+						        </optgroup>
+						        <optgroup label="新番">
+						            <option value="4">国漫</option>
+						            <option value="5">日韩</option>
+						            <option value="6">欧美</option>
+						        </optgroup>
+						    </select>
+						</div>
+						<div class="form-group">
+						    <label for="vod_pic_x">宣传图片链接:</label>
+						    <input type="url" class="form-control" id="vod_pic_x" name="vod_pic_x">
+						</div>
+						<script>
+						    var inputElement = document.getElementById("vod_pic");
+						    inputElement.addEventListener("change", function() {
+						        var inputValue = inputElement.value;
+						        if (inputValue.startsWith("https://upload.wikimedia.org")) {
+						            inputValue = inputValue.replace("upload.wikimedia.org", "upload.gxdjt.cf");
+						            inputElement.value = inputValue;
+						        }
+						    });
+						</script>
+						<div class="form-group">
+						    <label for="vod_blurb_x">动漫简介介绍:</label>
+						    <input type="text" class="form-control" id="vod_blurb_x" name="vod_blurb_x">
+						</div>
+	                    <button type="submit" class="btn btn-pink">修改数据</button>
+	                </form>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	
     <!-- 删除数据的模态框 -->
     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -384,6 +500,67 @@
     </div>
 </div>
 <?php
+	//处理修改数据的值
+	if (isset($_POST['name_x'])) {
+		$name = $_POST['name_x'];
+		$list = [];
+
+		if ($_POST['like_l_x'] != "") {
+			$pattern = '/(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*/';
+			$like_l_x = preg_replace($pattern, '', $_POST['like_l_x']);
+		    $list[] = "like_l = '{$like_l_x}'";
+		}
+		
+		if ($_POST['vod_sub_x'] != "") {
+		    $list[] = "vod_sub = '{$_POST['vod_sub_x']}'";
+		}
+		
+		if ($_POST['vod_state_x'] != "") {
+		    $list[] = "vod_state = '{$_POST['vod_state_x']}'";
+		}
+		
+		if ($_POST['year_x'] != "") {
+		    $list[] = "year = '{$_POST['year_x']}'";
+		}
+		
+		if ($_POST['quarter_x'] != "") {
+		    $list[] = "quarter = '{$_POST['quarter_x']}'";
+		}
+		
+		if ($_POST['type_id_x'] != "") {
+		    $list[] = "type_id = '{$_POST['type_id_x']}'";
+		}
+		
+		if ($_POST['vod_pic_x'] != "") {
+		    $list[] = "vod_pic = '{$_POST['vod_pic_x']}'";
+		}
+		
+		if ($_POST['vod_blurb_x'] != "") {
+		    $list[] = "vod_blurb = '{$_POST['vod_blurb_x']}'";
+		}
+
+		$join_list = implode(', ', $list);
+
+		$query = "UPDATE reserve_table SET $join_list WHERE name = '$name'";
+		echo $query;
+		$stmt = $database->prepare($query);
+		$result = $stmt->execute();
+
+		if ($result && $database->changes() > 0) {
+			// 更新成功后重建索引
+			$database->exec("REINDEX reserve_table");
+			echo "<script>window.location.href = 'i.php?msg=更改成功';</script>";
+		} else {
+			echo "<p id='error-msg' class='alert alert-danger'>更新失败，请检查输入的名称是否正确</p>";
+			echo "<script>
+			  setTimeout(function() {
+				var errorMsg = document.getElementById('error-msg');
+				errorMsg.parentNode.removeChild(errorMsg);
+			  }, 2000);
+			</script>";
+		}
+	}
+
 	// 处理删除数据的请求
 	if (isset($_POST['name_d'])) {
 		$name = $_POST['name_d'];
@@ -394,7 +571,7 @@
 		if ($result && $database->changes() > 0) {
 			// 删除成功后重建索引
 			$database->exec("REINDEX reserve_table");
-			echo "<script>window.location.href = 'i.php';</script>";
+			echo "<script>window.location.href = 'i.php?msg=删除成功';</script>";
 		} else{
 			echo "<p id='error-msg' class='alert alert-danger'>删除失败，请检查输入的名称是否正确</p>";
 			echo "<script>
