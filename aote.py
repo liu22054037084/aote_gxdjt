@@ -1,7 +1,8 @@
 import re
 import os
+import sys
 import time
-import msvcrt
+import select
 import shutil
 import random
 import os.path
@@ -259,12 +260,12 @@ def main():
             # 在异常退出后，十秒内没有输入则自动重启
             restart = True
             for i in range(10, 0, -1):
-                print(f"程序将在{i}秒后重启...")
+                print(f"程序将在{i}秒后重启...\n输入'y'阻止重启程序！")
                 time.sleep(1)
 
                 # 检查是否有输入
-                if msvcrt.kbhit():
-                    user_input = msvcrt.getch().decode().lower()
+                if select.select([sys.stdin], [], [], 0)[0]:
+                    user_input = sys.stdin.readline().strip().lower()
                     if user_input == 'y':
                         restart = False
                     break
