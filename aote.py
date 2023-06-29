@@ -166,7 +166,7 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
         modified_time_A = datetime.datetime.fromtimestamp(timestamp)
 
         if modified_time_A != modified_time_Z:
-            files, files_key = mp4_files(logger, path=FilesVideo)
+            files, files_key = mp4_files(logger=logger, path=FilesVideo)
             modified_time_Z = modified_time_A
         else:
             time.sleep(30)
@@ -174,7 +174,10 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
 
         my_list = filter_video(files=files, files_key=files_key, DB=DB, ReH=ReH)
 
-        process_list(logger, DB, my_list, GuaGen, VideoUrl, SQL, vod_dplayer)
+        if my_list is None:
+            continue
+
+        process_list(logger=logger, DB=DB, my_list=my_list, GuaGen=GuaGen, VideoUrl=VideoUrl, SQL=SQL, vod_dplayer=vod_dplayer)
 
         time.sleep(30)
         DB.drop_table('relay_table')
@@ -216,7 +219,7 @@ def main_loop(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer, c
         if c == cs:
             break
         logger.info(f'开始处理第{c}次数据表！')
-        process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplayer)
+        process_files(logger=logger, DB=DB, FilesVideo=FilesVideo, ReH=ReH, GuaGen=GuaGen, VideoUrl=VideoUrl, SQL=SQL, vod_dplayer=vod_dplayer)
         logger.info(f'完成新处理第{c}数据relay_table表删除！')
         logger.info(f'新处理的一次操作完成！')
         logger.info('进入三十秒沉默！\n')
