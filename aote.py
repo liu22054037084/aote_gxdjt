@@ -232,24 +232,34 @@ def main():
 
     logger, files_video, video_url, gua_gen, vod_dplayer, mysql_host, mysql_user, mysql_password, mysql_database, sqlite_db_file = check_env.get_env_file()
 
-    try:
-        logger.info('程序开始运行')
+    while True:
+        try:
+            logger.info('程序开始运行')
 
-        cs_z = 0
+            cs_z = 0
 
-        while True:
-            re_h = re.compile(r'(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*')  # 匹配 {num}
+            while True:
+                re_h = re.compile(r'(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*')  # 匹配 {num}
+                db = SQLiteDB(db_file=sqlite_db_file)
+                sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
+                logger.info('数据库全部连接成功')
+                logger.info(f'第{cs_z}数据库更新')
+
+                cs_z += 1
+                main_loop(logger=logger, DB=db, FilesVideo=files_video, ReH=re_h, GuaGen=gua_gen, VideoUrl=video_url, SQL=sql, vod_dplayer=vod_dplayer)
+
+                logger.info(f'完成{cs_z}次完循环处理！')
+        except Exception:
+            logger.exception(f'数据库连接错误或程序遭到强制退出!')
+        finally:
             db = SQLiteDB(db_file=sqlite_db_file)
-            sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
-            logger.info('数据库全部连接成功')
-            logger.info(f'第{cs_z}数据库更新')
+            db.drop_table('relay_table')
 
-            cs_z += 1
-            main_loop(logger=logger, DB=db, FilesVideo=files_video, ReH=re_h, GuaGen=gua_gen, VideoUrl=video_url, SQL=sql, vod_dplayer=vod_dplayer)
+        # 程序异常结束后进行确认是否退出自启动
+        for i in range(10, 0, -1):
+            print(f"程序将在{i}秒后重启...")
+            time.sleep(1)
 
-            logger.info(f'完成{cs_z}次完循环处理！')
-    except Exception:
-        logger.exception(f'数据库连接错误或程序遭到强制退出!')
-    finally:
-        db = SQLiteDB(db_file=sqlite_db_file)
-        db.drop_table('relay_table')
+        user_input = input("是否退出自启动？(y/n): ")
+        if user_input.lower() == 'y':
+            break
