@@ -169,6 +169,7 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
             files, files_key = mp4_files(logger=logger, path=FilesVideo)
             modified_time_Z = modified_time_A
         else:
+            logger.info(f"摆烂三十秒！")
             time.sleep(30)
             continue
 
