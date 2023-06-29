@@ -1,6 +1,7 @@
 import re
 import os
 import time
+import msvcrt
 import shutil
 import random
 import os.path
@@ -255,11 +256,18 @@ def main():
             db = SQLiteDB(db_file=sqlite_db_file)
             db.drop_table('relay_table')
 
-            # 程序异常结束后进行确认是否退出自启动
+            # 在异常退出后，十秒内没有输入则自动重启
+            restart = True
             for i in range(10, 0, -1):
                 print(f"程序将在{i}秒后重启...")
                 time.sleep(1)
 
-            user_input = input("是否退出自启动？(y/n): ")
-            if user_input.lower() == 'y':
+                # 检查是否有输入
+                if msvcrt.kbhit():
+                    user_input = msvcrt.getch().decode().lower()
+                    if user_input == 'y':
+                        restart = False
+                    break
+
+            if restart:
                 break

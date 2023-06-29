@@ -413,7 +413,7 @@ function executeStatement($database, $sql, $params)
 						<div class="form-group">
 						    <label for="type_id_x">视频分类:</label>
 						    <select class="form-control" id="type_id_x" name="type_id_x">
-								<option>请选择分类</option>
+								<option value="">请选择分类</option>
 						        <optgroup label="非新番">
 						            <option value="1">国漫</option>
 						            <option value="2">日韩</option>
