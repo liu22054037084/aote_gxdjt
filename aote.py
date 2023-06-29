@@ -171,12 +171,12 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
         else:
             logger.info(f"摆烂三十秒！")
             time.sleep(30)
-            continue
+            break
 
         my_list = filter_video(files=files, files_key=files_key, DB=DB, ReH=ReH)
 
         if my_list is None:
-            continue
+            break
 
         process_list(logger=logger, DB=DB, my_list=my_list, GuaGen=GuaGen, VideoUrl=VideoUrl, SQL=SQL, vod_dplayer=vod_dplayer)
 
