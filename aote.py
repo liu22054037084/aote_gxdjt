@@ -162,6 +162,7 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
     DB.create_table('relay_table', 'key TEXT PRIMARY KEY ASC ON CONFLICT REPLACE, files TEXT')
 
     modified_time_Z = ''
+    xh = 0
 
     while True:
         timestamp = os.path.getmtime(FilesVideo)
@@ -173,7 +174,7 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
         else:
             logger.info(f"摆烂三十秒！")
             time.sleep(30)
-            continue
+            break
 
         my_list = filter_video(files=files, files_key=files_key, DB=DB, ReH=ReH)
 
@@ -256,7 +257,6 @@ def main():
             db.drop_table('relay_table')
 
             tc = 0
-
             for i in range(10, 0, -1):
                 logger.exception(f"程序将在{i}秒后重启...\n\n请退出两次！")
                 time.sleep(1)
