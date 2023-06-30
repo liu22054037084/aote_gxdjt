@@ -162,7 +162,6 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
     DB.create_table('relay_table', 'key TEXT PRIMARY KEY ASC ON CONFLICT REPLACE, files TEXT')
 
     modified_time_Z = ''
-    xh = 0
 
     while True:
         timestamp = os.path.getmtime(FilesVideo)
@@ -173,6 +172,7 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
             modified_time_Z = modified_time_A
         else:
             logger.info(f"摆烂三十秒！")
+            DB.drop_table('relay_table')
             time.sleep(30)
             break
 
