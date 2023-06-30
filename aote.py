@@ -233,34 +233,32 @@ def main():
 
     logger, files_video, video_url, gua_gen, vod_dplayer, mysql_host, mysql_user, mysql_password, mysql_database, sqlite_db_file = check_env.get_env_file()
 
-    while True:
-        try:
-            logger.info('程序开始运行')
+    try:
+        logger.info('程序开始运行')
 
-            cs_z = 0
+        cs_z = 0
 
-            while True:
-                re_h = re.compile(r'(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*')  # 匹配 {num}
-                db = SQLiteDB(db_file=sqlite_db_file)
-                sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
-                logger.info('数据库全部连接成功')
-                logger.info(f'第{cs_z}数据库更新')
-
-                cs_z += 1
-                main_loop(logger=logger, DB=db, FilesVideo=files_video, ReH=re_h, GuaGen=gua_gen, VideoUrl=video_url, SQL=sql, vod_dplayer=vod_dplayer)
-
-                logger.info(f'完成{cs_z}次完循环处理！')
-        except Exception as e:
-            logger.exception(f'发生错误: {str(e)}')
-        finally:
+        while True:
+            re_h = re.compile(r'(?:\[|\(|\{|\s)(\d+)(?:\s*v\s*\d+)?(?:]|\)|}|\s)(\[\d*v\d]|\(\d*v\d\)|\[V\d]|\(V\d\))?.*')  # 匹配 {num}
             db = SQLiteDB(db_file=sqlite_db_file)
-            db.drop_table('relay_table')
+            sql = MySQLDB(host=mysql_host, user=mysql_user, password=mysql_password, database=mysql_database)
+            logger.info('数据库全部连接成功')
+            logger.info(f'第{cs_z}数据库更新')
 
-            tc = 0
-            for i in range(10, 0, -1):
-                logger.exception(f"程序将在{i}秒后重启...\n\n请退出两次！")
-                time.sleep(1)
-                tc += 1
+            cs_z += 1
+            main_loop(logger=logger, DB=db, FilesVideo=files_video, ReH=re_h, GuaGen=gua_gen, VideoUrl=video_url, SQL=sql, vod_dplayer=vod_dplayer)
 
-            if tc == 10:
-                continue
+            logger.info(f'完成{cs_z}次完循环处理！')
+    except Exception as e:
+        logger.exception(f'发生错误: {str(e)}')
+    finally:
+        db = SQLiteDB(db_file=sqlite_db_file)
+        db.drop_table('relay_table')
+
+        tc = 0
+        for i in range(10, 0, -1):
+            logger.exception(f"程序将在{i}秒后重启...\n\n请退出两次！")
+            time.sleep(1)
+            tc += 1
+
+        return tc
