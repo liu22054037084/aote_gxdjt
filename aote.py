@@ -125,7 +125,7 @@ def sql_decide_handling_write(SQL, list_b, DB, key, logger, cp1, vod_dplayer):
         startq = startq_mapping.get(l_b_values[3], '')
         endq = startq + 3 if startq else ''
         type_id = type_id_mapping.get(l_b_values[6], '')
-        q = 1 if int(l_b_values[6]) > 3 else int(l_b_values[6])
+        q = 1 if int(l_b_values[6]) > 3 else int(l_b_values[6]) + 1
 
         randomq = random.randint(startq, endq) if startq and endq else ''
         random_day = random.randint(1, 28) if startq and endq else ''
