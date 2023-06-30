@@ -173,7 +173,7 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
         else:
             logger.info(f"摆烂三十秒！")
             time.sleep(30)
-            break
+            continue
 
         my_list = filter_video(files=files, files_key=files_key, DB=DB, ReH=ReH)
 
@@ -181,8 +181,6 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
             break
 
         process_list(logger=logger, DB=DB, my_list=my_list, GuaGen=GuaGen, VideoUrl=VideoUrl, SQL=SQL, vod_dplayer=vod_dplayer)
-
-        time.sleep(30)
         DB.drop_table('relay_table')
 
 
@@ -251,13 +249,12 @@ def main():
                 main_loop(logger=logger, DB=db, FilesVideo=files_video, ReH=re_h, GuaGen=gua_gen, VideoUrl=video_url, SQL=sql, vod_dplayer=vod_dplayer)
 
                 logger.info(f'完成{cs_z}次完循环处理！')
-        except Exception:
-            logger.exception(f'数据库连接错误或程序遭到强制退出!')
+        except Exception as e:
+            logger.exception(f'发生错误: {str(e)}')
         finally:
             db = SQLiteDB(db_file=sqlite_db_file)
             db.drop_table('relay_table')
 
-            # 在异常退出后，十秒内没有输入则自动重启
             for i in range(10, 0, -1):
                 logger.exception(f"程序将在{i}秒后重启...\n\n请退出两次！")
                 time.sleep(1)
