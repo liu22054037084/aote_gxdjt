@@ -172,8 +172,8 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
             modified_time_Z = modified_time_A
         else:
             logger.info(f"摆烂三十秒！")
-            DB.drop_table('relay_table')
             time.sleep(30)
+            DB.drop_table('relay_table')
             break
 
         my_list = filter_video(files=files, files_key=files_key, DB=DB, ReH=ReH)
