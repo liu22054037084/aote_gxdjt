@@ -159,8 +159,6 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
     """
     处理文件
     """
-    DB.create_table('relay_table', 'key TEXT PRIMARY KEY ASC ON CONFLICT REPLACE, files TEXT')
-
     modified_time_Z = ''
 
     while True:
@@ -173,12 +171,15 @@ def process_files(logger, DB, FilesVideo, ReH, GuaGen, VideoUrl, SQL, vod_dplaye
         else:
             logger.info(f"摆烂三十秒！")
             time.sleep(30)
-            DB.drop_table('relay_table')
             break
-
+        DB.create_table('relay_table', 'key TEXT PRIMARY KEY ASC ON CONFLICT REPLACE, files TEXT')
+        logger.info(f"创建了用来储存视频信息的relay_table数据表！")
         my_list = filter_video(files=files, files_key=files_key, DB=DB, ReH=ReH)
 
         if my_list is None:
+            logger.info(f"没有视频文件存在不工作，跳出此次循环！")
+            DB.drop_table('relay_table')
+            logger.info(f"已经删除用来储存视频信息的relay_table数据表！")
             break
 
         process_list(logger=logger, DB=DB, my_list=my_list, GuaGen=GuaGen, VideoUrl=VideoUrl, SQL=SQL, vod_dplayer=vod_dplayer)
