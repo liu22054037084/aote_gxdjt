@@ -255,6 +255,12 @@ def main():
             db = SQLiteDB(db_file=sqlite_db_file)
             db.drop_table('relay_table')
 
+            tc = 0
+
             for i in range(10, 0, -1):
                 logger.exception(f"程序将在{i}秒后重启...\n\n请退出两次！")
                 time.sleep(1)
+                tc += 1
+
+            if tc == 10:
+                continue
