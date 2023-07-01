@@ -28,7 +28,15 @@
 		  background-color: #ff1493;
 		  border-color: #ff1493;
 		}
-
+		.page-form {
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		}
+		
+		.input-group {
+		    width: 128px; /* 根据需要调整宽度 */
+		}
 	</style>
 </head>
 <body>
@@ -289,71 +297,135 @@ function executeStatement($database, $sql, $params)
     ?>
 	<h2>数据列表</h2>
     <?php
-        // 获取当前页码
-        $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-        $limit = 5; // 每页显示的记录数
-        $offset = ($page - 1) * $limit;
+    // 获取当前页码
+    $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+    $limit = 5; // 每页显示的记录数
+    $offset = ($page - 1) * $limit;
     
-        // 查询表格中的所有数据
-        $query = "SELECT * FROM reserve_table LIMIT $limit OFFSET $offset";
-        $result = $database->query($query);
+    // 查询表格中的所有数据
+    $query = "SELECT * FROM reserve_table LIMIT $limit OFFSET $offset";
+    $result = $database->query($query);
     ?>
+    
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
-                  <th class="resizeable">动漫名称</th>
-                  <th class="resizeable">模糊字段</th>
-				  <th class="resizeable">宣传图片</th>
-				  <th class="resizeable">发行年份</th>
-				  <th class="resizeable">发行季度</th>
-				  <th class="resizeable">动漫别名</th>
-				  <th class="resizeable">动漫拼音</th>
-				  <th class="resizeable">动漫首字</th>
-				  <th class="resizeable">视频类型</th>
-                  <th class="resizeable">类型地区</th>
-                  <th class="resizeable">现时间戳</th>
-                  <th class="resizeable">动漫简介</th>
+                    <th class="resizeable">动漫名称</th>
+                    <th class="resizeable">模糊字段</th>
+                    <th class="resizeable">宣传图片</th>
+                    <th class="resizeable">发行年份</th>
+                    <th class="resizeable">发行季度</th>
+                    <th class="resizeable">动漫别名</th>
+                    <th class="resizeable">动漫拼音</th>
+                    <th class="resizeable">动漫首字</th>
+                    <th class="resizeable">视频类型</th>
+                    <th class="resizeable">类型地区</th>
+                    <th class="resizeable">现时间戳</th>
+                    <th class="resizeable">动漫简介</th>
                 </tr>
             </thead>
             <tbody>
                 <?php while ($row = $result->fetchArray(SQLITE3_ASSOC)) { ?>
-                <tr>
-                    <td class="resizeable"><?php echo $row['name']; ?></td>
-					<td class="resizeable"><?php echo $row['like_l']; ?></td>
-					<td class="resizable"><img src="<?php echo $row['vod_pic']; ?>" style="width:100%;" /></td>
-					<td class="resizeable"><?php echo $row['year']; ?></td>
-					<td class="resizeable"><?php echo $row['quarter']; ?></td>
-					<td class="resizeable"><?php echo $row['vod_sub']; ?></td>
-					<td class="resizeable"><?php echo $row['vod_en']; ?></td>
-					<td class="resizeable"><?php echo $row['vod_letter']; ?></td>
-					<td class="resizeable"><?php echo $row['vod_state']; ?></td>
-                    <td class="resizeable"><?php echo $row['type_id']; ?></td>
-                    <td class="resizeable"><?php echo $row['vod_time_add']; ?></td>
-                    <td class="resizeable"><?php echo $row['vod_blurb']; ?></td>
-                </tr>
+                    <tr>
+                        <td class="resizeable"><?php echo $row['name']; ?></td>
+                        <td class="resizeable"><?php echo $row['like_l']; ?></td>
+                        <td class="resizable"><img src="<?php echo $row['vod_pic']; ?>" style="width:100%;" /></td>
+                        <td class="resizeable"><?php echo $row['year']; ?></td>
+                        <td class="resizeable"><?php echo $row['quarter']; ?></td>
+                        <td class="resizeable"><?php echo $row['vod_sub']; ?></td>
+                        <td class="resizeable"><?php echo $row['vod_en']; ?></td>
+                        <td class="resizeable"><?php echo $row['vod_letter']; ?></td>
+                        <td class="resizeable"><?php echo $row['vod_state']; ?></td>
+                        <td class="resizeable"><?php echo $row['type_id']; ?></td>
+                        <td class="resizeable"><?php echo $row['vod_time_add']; ?></td>
+                        <td class="resizeable"><?php echo $row['vod_blurb']; ?></td>
+                    </tr>
                 <?php } ?>
             </tbody>
         </table>
     </div>
     
     <?php
-        // 计算总页数
-        $query = "SELECT COUNT(*) AS count FROM reserve_table";
-        $result = $database->querySingle($query);
-        $total_pages = ceil($result / $limit);
+    // 计算总页数
+    $query = "SELECT COUNT(*) AS count FROM reserve_table";
+    $result = $database->querySingle($query);
+    $total_pages = ceil($result / $limit);
+    
+    // 限制显示的按钮数为七个
+    $max_visible_buttons = 7;
+    
+    // 计算起始页码和结束页码
+    $start_page = max(1, $page - floor($max_visible_buttons / 2));
+    $end_page = min($start_page + $max_visible_buttons - 1, $total_pages);
+    
+    // 调整起始页码
+    $start_page = max(1, $end_page - $max_visible_buttons + 1);
     ?>
     
     <nav aria-label="分页导航">
         <ul class="pagination justify-content-center">
-            <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
-            <li class="page-item <?php echo $page === $i ? 'active' : ''; ?>">
-                <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
-            </li>
+            <?php if ($page > 1) { ?>
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="首页">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only">首页</span>
+                    </a>
+                </li>
             <?php } ?>
-        </ul>
+    
+            <?php if ($start_page > 1) { ?>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<?php echo $start_page - 1; ?>" aria-label="上一页">
+                        <span aria-hidden="true">&lsaquo;</span>
+                        <span class="sr-only">上一页</span>
+                    </a>
+                </li>
+            <?php } ?>
+    
+            <?php for ($i = $start_page; $i <= $end_page; $i++) { ?>
+                <li class="page-item <?php echo $page === $i ? 'active' : ''; ?>">
+                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                </li>
+            <?php } ?>
+    
+            <?php if ($end_page < $total_pages) { ?>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<?php echo $end_page + 1; ?>" aria-label="下一页">
+                        <span aria-hidden="true">&rsaquo;</span>
+                        <span class="sr-only">下一页</span>
+                    </a>
+                </li>
+            <?php } ?>
+    
+            <?php if ($page < $total_pages) { ?>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<?php echo $total_pages; ?>" aria-label="尾页">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only">尾页</span>
+                    </a>
+                </li>
+            <?php } ?>
+    		
+    		<li>
+    			<form action="" method="GET" class="page-form">
+    			    <div class="input-group">
+    			        <select name="page" class="form-control" style="margin-left: 4px;">
+    					<?php
+    					    for ($i =  $total_pages; $i > 0; $i--) {
+    					        echo "<option value='$i'>$i</option>";
+    					    }
+    					    ?>
+    					</select>
+    			        <div class="input-group-append">
+    			            <button type="submit" class="btn btn-primary">跳转</button>
+    			        </div>
+    			    </div>
+    			</form>
+    		</li>
+    	</ul>
     </nav>
-	
+    	
 	<!-- 修改数据的模态框 -->
 	<div class="modal fade" id="xiugaishuju" tabindex="-1" role="dialog" aria-labelledby="xiugaishujuLabel" aria-hidden="true">
 	    <div class="modal-dialog" role="document">
