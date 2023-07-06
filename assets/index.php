@@ -9,9 +9,8 @@
 	<script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js"></script>
 	<script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 	<script type="text/javascript">
-	  const url = new URL(location.href);
-	  url.searchParams.delete('msg');
-	  window.history.replaceState({}, document.title, url.toString());
+			const url = new URL(location.href);
+			window.history.replaceState({}, document.title, url.origin);
 	</script>
 	<style>
 		.resizeable {
@@ -298,16 +297,27 @@ function executeStatement($database, $sql, $params)
     ?>
 	<h2>数据列表</h2>
     <?php
-    // 获取当前页码
-    $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-    $limit = 5; // 每页显示的记录数
-    $offset = ($page - 1) * $limit;
-    
-    // 查询表格中的所有数据
-    $query = "SELECT * FROM reserve_table LIMIT $limit OFFSET $offset";
-    $result = $database->query($query);
-    ?>
-    
+        // 获取总记录数
+        $query = "SELECT COUNT(*) AS count FROM reserve_table";
+        $result = $database->querySingle($query);
+        $total_records = intval($result);
+        
+        $limit = 5; // 每页显示的记录数
+        $total_pages = ceil($total_records / $limit);
+        
+        // 获取当前页码，默认为最后一页
+        $page = isset($_GET['page']) ? intval($_GET['page']) : $total_pages;
+        
+        // 校正页码，确保在有效范围内
+        $page = max(1, min($total_pages, $page));
+        
+        // 计算偏移量
+        $offset = ($page - 1) * $limit;
+        
+        // 查询当前页的数据
+        $query = "SELECT * FROM reserve_table LIMIT $limit OFFSET $offset";
+        $result = $database->query($query);
+    ?> 
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
@@ -354,7 +364,7 @@ function executeStatement($database, $sql, $params)
     $total_pages = ceil($result / $limit);
     
     // 限制显示的按钮数为七个
-    $max_visible_buttons = 7;
+    $max_visible_buttons = 5;
     
     // 计算起始页码和结束页码
     $start_page = max(1, $page - floor($max_visible_buttons / 2));
