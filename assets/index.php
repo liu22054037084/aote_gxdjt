@@ -9,8 +9,9 @@
 	<script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js"></script>
 	<script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 	<script type="text/javascript">
-			const url = new URL(location.href);
-			window.history.replaceState({}, document.title, url.origin);
+	  const url = new URL(location.href);
+	  url.searchParams.delete('msg');
+	  window.history.replaceState({}, document.title, url.toString());
 	</script>
 	<style>
 		.resizeable {

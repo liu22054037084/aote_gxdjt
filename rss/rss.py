@@ -3,7 +3,7 @@ import feedparser
 import re
 
 
-def rss(url, proxies={'https': 'http://127.0.0.1:8889'}):
+def rss(url, proxies={'http': 'http://127.0.0.1:8889'}):
     querystring = {"bangumiId": "2967", "subgroupid": "615"}
 
     headers = {
@@ -57,6 +57,6 @@ def rss(url, proxies={'https': 'http://127.0.0.1:8889'}):
     return rss_dict
 
 
-# q = rss(url="")
+# q = rss(url="https://mikanani.me/RSS/Bangumi?bangumiId=2702&subgroupid=576")
 # for i in q:
-#     print(q[i])
+#     print(f"magnet:?xt=urn:btih:{q[i]}")
