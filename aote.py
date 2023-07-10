@@ -45,7 +45,7 @@ def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):
         vod_letter = vod_en[0].upper()
         DB.update_rows(f'reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")
 
-    if list_b[0][10] is not None and 'gxdjt.cf' not in list_b[0][10]:
+    if list_b[0][10] is not None and 'gxdjt.org' not in list_b[0][10]:
         cg = download_image(list_b[0][10], 'img.jpg', gen_cp)
         if cg == '成功':
             image_url = f"{VideoUrl}{cp_up}img.jpg"
