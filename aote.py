@@ -26,7 +26,9 @@ def filter_video(files, files_key, DB, ReH):  # 这个是处理获取的视频�
     """
     data = [(file_key, files[file_key]) for file_key in files_key]
 
-    DB.insert_many_rows("relay_table", data, "(key, files)")
+    if data is None:
+
+        DB.insert_many_rows("relay_table", data, "(key, files)")
 
     files_key = [ReH.sub('', item) for item in files_key]
 
@@ -45,7 +47,13 @@ def information_handling(gen_cp, logger, list_b, DB, VideoUrl, cp_up):
         vod_letter = vod_en[0].upper()
         DB.update_rows(f'reserve_table', f"vod_en = '{vod_en}', vod_letter = '{vod_letter}'", f"name = '{list_b[0][0]}'")
 
-    if list_b[0][10] is not None and 'gxdjt.org' not in list_b[0][10]:
+    # 提取域名部分
+    domain = VideoUrl[VideoUrl.find("//") + 2:VideoUrl.find("/", VideoUrl.find("//") + 2)]
+
+    # 提取最后一个以点号连接的部分
+    domain = domain.split('.')[-2] + "." + domain.split('.')[-1]
+
+    if list_b[0][10] is not None and domain not in list_b[0][10]:
         cg = download_image(list_b[0][10], 'img.jpg', gen_cp)
         if cg == '成功':
             image_url = f"{VideoUrl}{cp_up}img.jpg"
