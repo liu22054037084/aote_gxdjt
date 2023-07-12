@@ -20,7 +20,7 @@ REM 检查返回值并使用本地代理代理
 IF %ERRORLEVEL% NEQ 0 (
   git config --global http.proxy %HTTP_PROXY%
   git push -u origin main
-  git config --global --unset http.proxy
+  git config --global --unset HTTP_PROXY
 )
 
 EXIT
