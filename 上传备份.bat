@@ -10,17 +10,6 @@ git add .
 
 git commit -m %Today%
 
-REM 设置代理环境变量
-set HTTP_PROXY=http://127.0.0.1:8889
+git push -u origin main
 
-REM 使用 git push 命令，并设置超时时间
-git push -u origin main --timeout=60
-
-REM 检查返回值并使用本地代理代理
-IF %ERRORLEVEL% NEQ 0 (
-  git config --global http.proxy %HTTP_PROXY%
-  git push -u origin main
-  git config --global --unset HTTP_PROXY
-)
-
-EXIT
+EXIT  
